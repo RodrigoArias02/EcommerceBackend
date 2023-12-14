@@ -1,0 +1,43 @@
+[
+	{
+		"id": 15,
+		"title": "Lechuga",
+		"description": "Lechuga verde",
+		"code": 6,
+		"price": 6554,
+		"status": true,
+		"stock": 65,
+		"category": "Comida",
+		"thumbnail": []
+	},
+	{
+		"id": 16,
+		"title": "t",
+		"description": "t",
+		"code": 5,
+		"price": 5,
+		"status": true,
+		"stock": 5,
+		"category": "Comida",
+		"thumbnail": [
+			"gfdg"
+		]
+	},
+	{
+		"id": 17,
+		"title": "g",
+		"description": "h",
+		"code": 5,
+		"price": 5,
+		"status": true,
+		"stock": 5,
+		"category": "Comida",
+		"thumbnail": [
+			"gfdfg"
+		]
+	},
+	{
+		"id": 18,
+		"productos": []
+	}
+]
