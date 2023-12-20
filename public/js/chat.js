@@ -1,5 +1,4 @@
 const socket = io();
-
 //mejor practica que recorrer un array.
 let contenedor = document.getElementById("contenedorMensaje");
 contenedor.scrollTop = contenedor.scrollHeight;
@@ -8,39 +7,34 @@ let userGlobal;
 let btn = document.getElementById("btnForm");
 // Define una función asíncrona que muestra un cuadro de diálogo con un input
 async function mostrarCuadroDialogo() {
-    try {
-      const resultado = await Swal.fire({
-        title: 'Ingresa tu nombre',
-        input: 'text',
-        inputPlaceholder: 'Escribe tu nombre',
-        showCancelButton: true,
-        confirmButtonText: 'Aceptar',
-        cancelButtonText: 'Cancelar',
-      });
-  
-      if (resultado.isConfirmed) {
-        if (resultado.value) {
-          await Swal.fire({
-            title: '¡Hola!',
-            text: 'Gracias por ingresar tu nombre: ' + resultado.value,
-            icon: 'success',
-          });
-          userGlobal = await resultado.value
-        } else {
-          await Swal.fire('Oops...', 'No ingresaste nada. :(', 'error');
-        }
-      } else if (resultado.dismiss === Swal.DismissReason.cancel) {
-        await Swal.fire('Cancelado', 'No ingresaste tu nombre.', 'info');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-    }
-  }
-  
-  // Llama a la función asíncrona
-  mostrarCuadroDialogo()
+  try {
+    // Obtener el contenido de la etiqueta <p> por su ID
+    let etiquetaP = document.getElementById("nombreUsuario").innerText;
 
-  
+    // Buscar y extraer el nombre de usuario del texto
+    let nombreUsuario = etiquetaP.match(/user: (.+)/);
+
+    if (nombreUsuario && nombreUsuario.length > 1) {
+      let nombreUsuarioExtraido = nombreUsuario[1];
+      if (nombreUsuarioExtraido) {
+        await Swal.fire({
+          title: "¡Hola!",
+          text: "Bienvenido " + nombreUsuarioExtraido,
+          icon: "success",
+        });
+        userGlobal = nombreUsuarioExtraido;
+      }
+    } else {
+      await Swal.fire("Cancelado", "No iniciaste sesion.", "info");
+    }
+  } catch (error) {
+    console.error("Error:", error);
+  }
+}
+
+// Llama a la función asíncrona
+mostrarCuadroDialogo();
+
 // Función para agregar una nueva sección al div
 function agregarSeccion(user, message, time) {
   // Crear un nuevo elemento <section>
@@ -68,17 +62,16 @@ function agregarSeccion(user, message, time) {
   // Agregar la nueva sección al div
   contenedor.appendChild(nuevaSeccion);
   contenedor.scrollTop = contenedor.scrollHeight;
- 
 }
 btn.addEventListener("click", async () => {
   // Obtener datos del formulario
   const message = document.getElementsByName("message")[0].value;
 
-  console.log(userGlobal)
+  console.log(userGlobal);
   // Crear un objeto JSON con los datos del formulario
   const formData = {
     user: userGlobal,
-    message: message
+    message: message,
   };
   // Enviar datos al servidor
   try {

@@ -4,8 +4,10 @@ import { engine } from "express-handlebars";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import { Server } from "socket.io";
-// import ProductManager from './functions/functionProducts.js';
+import session from "express-session";
+import MongoStore from "connect-mongo";
 import { ManagerProductsMongoDB } from "./dao/managerProductsMongo.js";
+// import ProductManager from './functions/functionProducts.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -29,6 +31,19 @@ app.engine(
   })
 );
 
+app.use(
+  session({
+    secret: "1234",
+    resave:true,
+    saveUninitialized:true,
+    store: MongoStore.create({
+      mongoUrl:"mongodb+srv://Rodrigo:terremoto@cluster0.ycruuxq.mongodb.net/?retryWrites=true&w=majority",
+      mongoOptions:{dbName:"ecommerce"},
+      ttl:3600
+    })
+  })
+);
+
 app.set("view engine", "handlebars");
 app.set("views", join(__dirname, "views"));
 
@@ -40,12 +55,14 @@ app.use(express.static(join(__dirname, "./public")));
 import routerProducts from "./routes/productsRoutes.js";
 import routerCart from "./routes/cartRoutes.js";
 import routerViews from "./routes/viewsRoutes.js";
-import routerViewsChat from "./routes/viewsRoutesChat.js";
+import routerChat from "./routes/chatRoutes.js";
+import routerSessions from "./routes/sessionsRoutes.js";
 
 app.use("/api/products", routerProducts);
 app.use("/api/carts", routerCart);
 app.use("/", routerViews);
-app.use("/chat", routerViewsChat);
+app.use("/chat", routerChat);
+app.use("/api/sessions", routerSessions);
 
 // Ruta principal
 app.get("/", async (req, res) => {
@@ -66,7 +83,7 @@ app.get("/", async (req, res) => {
   if (req.query.direccion) {
     direccion = req.query.direccion;
   }
-  
+
   try {
     productos = await manager.listProductsAggregate(
       categoria,
