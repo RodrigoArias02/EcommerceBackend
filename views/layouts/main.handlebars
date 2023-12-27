@@ -1,17 +1,20 @@
-<!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="./css/chat.css">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./css/chat.css" />
     <title>Document</title>
-</head>
-<body>
+  </head>
+  <body>
     <a href="/">Home</a>
-    <a href="/login">Login</a>
-    <a href="/registro">Registro</a>
-    <a href="/perfil">Perfil</a>
-    <a href="api/sessions/logout">Logout</a>
+    {{#if login}}
+      <a href="/perfil">Perfil</a>
+      <a href="api/sessions/logout">Logout</a>
+    {{else}}
+      <a href="/login">Login</a>
+      <a href="/registro">Registro</a>
+    {{/if}}
+
     {{{body}}}
-</body>
+  </body>
 </html>

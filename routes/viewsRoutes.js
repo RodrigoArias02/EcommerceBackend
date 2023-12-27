@@ -35,6 +35,59 @@ const auth=(req,res,next)=>{
 }
 
 // Ruta principal
+router.get("/", async (req, res) => {
+  res.setHeader("Content-Type", "text/html");
+  // const productos=productManager.getProduct()
+  let categoria;
+  let productos;
+  let direccion;
+  let pagina;
+  if (req.query.category) {
+    categoria = req.query.category;
+  }
+  if (req.query.pagina) {
+    pagina = req.query.pagina;
+  } else {
+    pagina = 1;
+  }
+  if (req.query.direccion) {
+    direccion = req.query.direccion;
+  }
+
+  try {
+    productos = await manager.listProductsAggregate(
+      categoria,
+      pagina,
+      direccion
+    );
+    if (productos.status == 200) {
+      let {
+        playload,
+        totalPages,
+        hasPrevPage,
+        hasNextPage,
+        prevPage,
+        nextPage,
+      } = productos;
+
+      res.status(200).render("home", {
+        playload,
+        hasNextPage,
+        hasPrevPage,
+        prevPage,
+        nextPage,
+        totalPages,
+        categoria,
+        direccion,
+        pagina,
+        login: req.session.usuario?true:false
+      });
+    } else {
+      res.status(500).send("Hubo un error");
+    }
+  } catch (error) {}
+});
+
 router.get("/ingresarProductos", async (req, res) => {
   // let productos=productManager.getProduct()
   const productos = await manager.listProducts();
@@ -62,7 +115,8 @@ router.get("/productos", auth ,async (req, res) => {
     prevPage,
     nextPage,
     totalPages,
-    usuario
+    usuario,
+    login:true
   });
 });
 
@@ -73,8 +127,7 @@ router.get("/carts/:cid", async (req, res) => {
   const { status, carrito } = await managerC.cartId(productId);
 
   if (status == 200) {
-    const productosCarritos = carrito.productos;
-    console.log(productosCarritos);
+
     res.status(200).render("cart", { productosCarritos });
   } else if (status == 400) {
     return res.status(400).json({ error: "No se encontro el id" });
@@ -104,19 +157,19 @@ router.get("/login", async (req, res) => {
 
   const {user, error} = req.query;
  
-  res.status(200).render("login",{user,error});
+  res.status(200).render("login",{user,error, login:false});
 });
 
 router.get("/registro", async (req, res) => {
   res.setHeader("Content-Type", "text/html");
   const {error} = req.query;
-  console.log(error)
-  res.status(200).render("register", {error});
+
+  res.status(200).render("register", {error,login:false});
 });
 
 router.get("/perfil", auth, async(req,res)=>{
   res.setHeader("Content-Type", "text/html");
   const usuario = req.session.usuario;
-  res.status(200).render("perfil", {usuario});
+  res.status(200).render("perfil", {usuario,login:true});
 })
 export default router;

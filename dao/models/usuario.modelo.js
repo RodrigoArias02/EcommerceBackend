@@ -10,8 +10,10 @@ const usuariosSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true,
   },
+},
+{
+  strict:false,
 });
 //Mismo nombre de coleccion
 const UsuariosModelo = mongoose.model('usuarios', usuariosSchema);

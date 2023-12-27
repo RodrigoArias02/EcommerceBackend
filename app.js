@@ -7,6 +7,8 @@ import { Server } from "socket.io";
 import session from "express-session";
 import MongoStore from "connect-mongo";
 import { ManagerProductsMongoDB } from "./dao/managerProductsMongo.js";
+import { initializarPassport } from "./config/config.passport.js";
+import passport from "passport";
 // import ProductManager from './functions/functionProducts.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -51,6 +53,10 @@ app.set("views", join(__dirname, "views"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(join(__dirname, "./public")));
+initializarPassport()
+app.use(passport.initialize())
+app.use(passport.session())
+
 // Rutas
 import routerProducts from "./routes/productsRoutes.js";
 import routerCart from "./routes/cartRoutes.js";
@@ -64,58 +70,6 @@ app.use("/", routerViews);
 app.use("/chat", routerChat);
 app.use("/api/sessions", routerSessions);
 
-// Ruta principal
-app.get("/", async (req, res) => {
-  res.setHeader("Content-Type", "text/html");
-  // const productos=productManager.getProduct()
-  let categoria;
-  let productos;
-  let direccion;
-  let pagina;
-  if (req.query.category) {
-    categoria = req.query.category;
-  }
-  if (req.query.pagina) {
-    pagina = req.query.pagina;
-  } else {
-    pagina = 1;
-  }
-  if (req.query.direccion) {
-    direccion = req.query.direccion;
-  }
-
-  try {
-    productos = await manager.listProductsAggregate(
-      categoria,
-      pagina,
-      direccion
-    );
-    if (productos.status == 200) {
-      let {
-        playload,
-        totalPages,
-        hasPrevPage,
-        hasNextPage,
-        prevPage,
-        nextPage,
-      } = productos;
-
-      res.status(200).render("home", {
-        playload,
-        hasNextPage,
-        hasPrevPage,
-        prevPage,
-        nextPage,
-        totalPages,
-        categoria,
-        direccion,
-        pagina,
-      });
-    } else {
-      res.status(500).send("Hubo un error");
-    }
-  } catch (error) {}
-});
 app.use((req, res, next) => {
   res.status(404).send("La ruta no se encontró");
 });
