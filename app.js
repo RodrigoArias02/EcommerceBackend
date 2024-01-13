@@ -6,7 +6,6 @@ import { dirname, join } from "path";
 import { Server } from "socket.io";
 import session from "express-session";
 import MongoStore from "connect-mongo";
-import { ManagerProductsMongoDB } from "./dao/managerProductsMongo.js";
 import { initializarPassport } from "./config/config.passport.js";
 import passport from "passport";
 // import ProductManager from './functions/functionProducts.js';
@@ -16,8 +15,7 @@ const __dirname = dirname(__filename);
 
 // let ruta = join(__dirname, "archives", "products.json");
 
-// let productManager = new ProductManager(ruta);
-const manager = new ManagerProductsMongoDB();
+
 
 const app = express();
 const PORT = 3000;

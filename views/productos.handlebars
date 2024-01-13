@@ -1,7 +1,9 @@
-<h3>Bienvenido {{usuario.nombre}} </h3>
+<h3>Bienvenido {{usuario.nombre}}{{usuario.apellido}} </h3>
 <h4>email: {{usuario.email}} </h4>
+<h4>age: {{usuario.age}} </h4>
+
 <h4>Rol: {{usuario.rol}} </h4>
-<input type="text" id="idcarrito" placeholder="Escriba id de carrito">
+<input type="text" id="idcarrito" value="{{usuario.carrito}}" placeholder="Escriba id de carrito">
 <div id="productContainer">
   {{#each productos}}
     <div>
