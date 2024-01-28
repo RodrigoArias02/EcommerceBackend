@@ -1,9 +1,11 @@
 import passport from "passport";
 import local from "passport-local";
-import UserModelo from "../dao/models/user.model.js";
+import { ManagerUsersMongoDB } from "../dao/managerUsersMongo.js";
 import { crearHash, validPassword } from "../utils.js";
 import github from "passport-github2";
+import { configVar } from "./config.js";
 
+const managerUsers = new ManagerUsersMongoDB();
 export const initializarPassport = () => {
   passport.use(
     "registro",
@@ -14,14 +16,21 @@ export const initializarPassport = () => {
       },
       async (req, username, password, done) => {
         try {
-          const {first_name, last_name, age, cartId, rol } = req.body;
+          const { first_name, last_name, age, cartId, rol } = req.body;
 
-          if (!first_name || !last_name || !age || !cartId || !username || !password) {
+          if (
+            !first_name ||
+            !last_name ||
+            !age ||
+            !cartId ||
+            !username ||
+            !password
+          ) {
             console.log("Rellenar campos");
             return done(null, false);
           }
 
-          const existe = await UserModelo.findOne({ email: username });
+          const existe = await managerUsers.searchUserEmail(username);
 
           if (existe != null) {
             console.log("El usuario ya existe");
@@ -32,17 +41,15 @@ export const initializarPassport = () => {
 
           try {
             let passwordHash = crearHash(password);
-
-            usuario = await UserModelo.create({
+            usuario = await managerUsers.createUser(
               first_name,
               last_name,
-              email: username,
+              username,
               age,
-              password: passwordHash,
+              passwordHash,
               cartId,
-              rol,
-            });
-
+              rol
+            );
             return done(null, usuario);
           } catch (error) {
             return done(error);
@@ -68,9 +75,7 @@ export const initializarPassport = () => {
             return done(null, false);
           }
 
-          let usuario = await UserModelo.findOne({
-            email: username,
-          }).lean();
+          let usuario = await managerUsers.searchUserEmail(username);
           if (!usuario) {
             // return res.redirect(`/login?error=credenciales incorrectas`)
             return done(null, false);
@@ -79,7 +84,7 @@ export const initializarPassport = () => {
             // return res.redirect(`/login?error=credenciales incorrectas`)
             return done(null, false);
           }
-      
+
           delete usuario.password;
           return done(null, usuario);
           // previo a devolver un usuario con done, passport graba en la req, una propiedad
@@ -94,25 +99,23 @@ export const initializarPassport = () => {
     "github",
     new github.Strategy(
       {
-        clientID: "Iv1.e2121a1b68e0431d",
-        clientSecret: "91b686373b760938c6f811612f7dd52d4ebc3d82",
+        clientID: configVar.CLIENTIDGITHUB,
+        clientSecret: configVar.CLIENTSECRETGITHUB,
         callbackURL: "http://localhost:3000/api/sessions/callbackGithub",
       },
       async (accessToken, refreshToken, profile, done) => {
         try {
-          // console.log(profile)
-          let usuario = await UserModelo.findOne({
-            email: profile._json.email,
-          }).lean();
+          let usuario = await managerUsers.searchUserEmail(profile._json.email);
           if (!usuario) {
             let nuevoUsuario = {
               nombre: profile._json.name,
               email: profile._json.email,
               profile,
             };
-            usuario = await UserModelo.create(nuevoUsuario);
+            console.log("El usuario no esta registrado");
+            return done(null, false);
           }
-        
+
           return done(null, usuario);
         } catch (error) {
           return done(error);
@@ -128,7 +131,7 @@ export const initializarPassport = () => {
 
   passport.deserializeUser(async (email, done) => {
     try {
-      const usuario = await UserModelo.findOne({ email });
+      const usuario = await managerUsers.searchUserEmail(email);
       return done(null, usuario);
     } catch (error) {
       done(error);

@@ -179,7 +179,7 @@ export class ManagerProductsMongoDB {
     }
   }
 
-  async deletProduct(id) {
+  async deleteProduct(id) {
     try {
       // Validar si el ID proporcionado es válido
 

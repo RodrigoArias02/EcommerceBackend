@@ -8,6 +8,7 @@ import session from "express-session";
 import MongoStore from "connect-mongo";
 import { initializarPassport } from "./config/config.passport.js";
 import passport from "passport";
+import { configVar } from "./config/config.js";
 // import ProductManager from './functions/functionProducts.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -15,10 +16,10 @@ const __dirname = dirname(__filename);
 
 // let ruta = join(__dirname, "archives", "products.json");
 
-
+console.log(configVar)
 
 const app = express();
-const PORT = 3000;
+const PORT = configVar.PORT;
 
 // Configuración del motor de vistas
 app.engine(
@@ -33,12 +34,12 @@ app.engine(
 
 app.use(
   session({
-    secret: "1234",
+    secret: configVar.SECRETSESSION,
     resave:true,
     saveUninitialized:true,
     store: MongoStore.create({
-      mongoUrl:"mongodb+srv://Rodrigo:terremoto@cluster0.ycruuxq.mongodb.net/?retryWrites=true&w=majority",
-      mongoOptions:{dbName:"ecommerce"},
+      mongoUrl:configVar.MONGO_URL,
+      mongoOptions:{dbName:configVar.DBNAME},
       ttl:3600
     })
   })
@@ -61,6 +62,7 @@ import routerCart from "./routes/cartRoutes.js";
 import routerViews from "./routes/viewsRoutes.js";
 import routerChat from "./routes/chatRoutes.js";
 import routerSessions from "./routes/sessionsRoutes.js";
+import { config } from "dotenv";
 
 app.use("/api/products", routerProducts);
 app.use("/api/carts", routerCart);
@@ -96,8 +98,8 @@ io.on("connection", (socket) => {
 });
 try {
   await mongoose.connect(
-    "mongodb+srv://Rodrigo:terremoto@cluster0.ycruuxq.mongodb.net/?retryWrites=true&w=majority",
-    { dbName: "ecommerce" }
+    configVar.MONGO_URL,
+    { dbName: configVar.DBNAME }
   );
   console.log("DB Online");
 } catch (error) {

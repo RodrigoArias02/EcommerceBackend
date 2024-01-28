@@ -29,13 +29,12 @@ export class ManagerCartMongoDB {
   async cartId(id) {
     try {
     const cartSearch = await carritoModelo.findOne({ _id: id }).populate("productos.idProducto");
-      console.log(cartSearch)
     if (!cartSearch) {
       // El carrito no fue encontrado
       console.log("carrito no encontrado")
       return { status: 404, error: "Carrito no encontrado" };
     }
-    console.log("carrito encontrado")
+  
     return { status: 200, carrito: cartSearch };
     } catch (error) {
       console.error("Algo salio mal en la busqueda:", error);
@@ -163,7 +162,7 @@ export class ManagerCartMongoDB {
     }
   }
 
-  async deletTotalProductCart(id) {
+  async deleteTotalProductCart(id) {
     try {
       const result = await carritoModelo.updateOne(
         { _id: id },
@@ -184,7 +183,7 @@ export class ManagerCartMongoDB {
     } catch (error) {}
   }
 
-  async deletCart(id) {
+  async deleteCart(id) {
     try {
       // Validar si el ID proporcionado es válido
 
