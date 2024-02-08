@@ -1,9 +1,8 @@
-import { ManagerCartMongoDB } from "../dao/managerCartsMongo.js";
 import mongoose from "mongoose";
-import { ManagerProductsMongoDB } from "../dao/managerProductsMongo.js";
-
-const manager = new ManagerCartMongoDB();
-const managerProduct=new ManagerProductsMongoDB
+import { ProductServices } from "../service/product.service.js";
+import { CartServices } from "../service/cart.service.js";
+import { CartAmount, CartSaveProduct, RenderCart } from "../DTO/cartsDTO.js";
+import { TicketServices } from "../service/ticket.service.js";
 
 export class CartsControllers {
 
@@ -11,11 +10,14 @@ export class CartsControllers {
     res.setHeader("Content-Type", "text/html");
     const productId = req.params.cid; // Obtén el id del producto de req.params
 
-    const { status, carrito } = await manager.cartId(productId);
-    const productos=carrito.productos
-    console.log(productos)
+    const { status, carrito } = await CartServices.searchCartIdService(productId);
+
+    let objectAmount=new CartAmount(carrito)
+
+    let render=new RenderCart(objectAmount,carrito)
+
     if (status == 200) {
-      res.status(200).render("cart", { productos });
+      res.status(200).render("cart", {render});
     } else if (status == 400) {
       return res.status(400).json({ error: "No se encontro el id" });
     } else {
@@ -25,7 +27,7 @@ export class CartsControllers {
 
   static async loadCarts(req, res) {
     res.setHeader("Content-Type", "application/json");
-    const carritos = await manager.listCart();
+    const carritos = await CartServices.listCartService();
     return res.status(201).json({ carritos });
   }
 
@@ -33,7 +35,7 @@ export class CartsControllers {
     res.setHeader("Content-Type", "application/json");
 
     // const validacion = cartManager.CreateCart();
-    const validacion = manager.createCart();
+    const validacion = CartServices.createCartService();
     if (validacion) {
       return res.status(201).json("Carrito creado con exito");
     } else {
@@ -45,7 +47,7 @@ export class CartsControllers {
     const productId = req.params.cid; // Obtén el id del producto de req.params
     res.setHeader("Content-Type", "application/json");
 
-    const { status, carrito } = await manager.cartId(productId);
+    const { status, carrito } = await CartServices.searchCartIdService(productId);
     if (status == 200) {
       return res.status(200).json({ carrito });
     } else if (status == 400) {
@@ -67,7 +69,7 @@ export class CartsControllers {
           error: "El id no cumple las caracteristicas de id tipo mongoDB",
         });
     }
-    const validacion = await managerProduct.ProductoId(productId);
+    const validacion = await ProductServices.ProductoIdService(productId);
     if (validacion.status != 200) {
       return res.status(400).json(validacion.error);
     }
@@ -76,7 +78,7 @@ export class CartsControllers {
       quantity: 1,
     };
 
-    const agregarProducto = await manager.addProductToCart(cartId, formProduct);
+    const agregarProducto = await CartServices.addProductToCartService(cartId, formProduct);
     return res.status(200).json(agregarProducto);
   }
 
@@ -87,7 +89,7 @@ export class CartsControllers {
     const quantity = req.body;
 
     if (typeof quantity === "object" && quantity !== null) {
-      const updateQuantity = await manager.updateQuantity(
+      const updateQuantity = await CartServices.updateQuantityService(
         cartId,
         productId,
         quantity
@@ -114,23 +116,30 @@ export class CartsControllers {
   static async putUpdateProduct(req, res) {
     res.setHeader("Content-Type", "application/json");
     const cartId = req.params.cid;
-    const arrayProducts = req.body;
+    const newProduct = req.body;
+
+    if (!('newIdProduct' in newProduct) || !('newQuantity' in newProduct)) {
+      return res.status(400).json({ error: 'Los datos del nuevo producto son inválidos' });
+  }
+
+    let arrayProducts=new CartSaveProduct(newProduct)
+    arrayProducts=[arrayProducts]
   
     const idValido = mongoose.Types.ObjectId.isValid(cartId)
     if(!idValido){
       return res.status(400).json({error:"El id no cumple las caracteristicas de id tipo mongoDB"})
     }
-    const checkCart = await manager.cartId(cartId);
+    const checkCart = await CartServices.searchCartIdService(cartId);
     if (checkCart.status != 200) {
      
       return res.status(checkCart.status).json({ checkCart });
     } else {
       if (Array.isArray(arrayProducts)) {
-        const updateProducts = await manager.updateProducts(
+        const updateProducts = await CartServices.updateProductsService(
           cartId,
           arrayProducts
         );
-        console.log(updateProducts);
+
         if (updateProducts.status == 200) {
           return res.status(200).json({ updateProducts });
         } else {
@@ -148,7 +157,7 @@ export class CartsControllers {
     res.setHeader("Content-Type", "application/json");
     const cartId = req.params.cid; // Obtén el id del producto de req.params
   
-    const deletProducts = await manager.deleteTotalProductCart(cartId);
+    const deletProducts = await CartServices.deleteTotalProductCartService(cartId);
     return res.status(200).json(deletProducts);
   }
 
@@ -157,7 +166,16 @@ export class CartsControllers {
     const cartId = req.params.cid; // Obtén el id del producto de req.params
     const productId = req.params.pid; // Obtén el id del producto de req.params
   
-    const deletProducts = await manager.deleteProductCart(cartId, productId);
+    const deletProducts = await CartServices.deleteProductCartService(cartId, productId);
     return res.status(200).json(deletProducts);
+  }
+
+  static async purchase(req, res) {
+    res.setHeader("Content-Type", "application/json");
+    const cartId = req.params.cid; // Obtén el id del producto de req.params
+
+    let ticket= await TicketServices.createTicketService(cartId)
+    console.log(ticket)
+    return res.status(200).json({ticket});
   }
 }

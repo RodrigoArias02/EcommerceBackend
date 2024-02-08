@@ -1,3 +1,5 @@
+import { UserRead } from "../DTO/usersDTO.js";
+
 export class UsersControllers {
   static async renderLoginUser(req, res) {
     res.setHeader("Content-Type", "text/html");
@@ -17,27 +19,25 @@ export class UsersControllers {
   //autenticacion normal
   static async authenticateUser(req, res) {
     res.setHeader("Content-Type", "application/json");
-    req.session.usuario = {
-      nombre: req.user.first_name,
-      apellido: req.user.last_name,
-      carrito: req.user.cartId,
-      age: req.user.age,
-      email: req.user.email,
-      rol: req.user.rol,
-    };
+
+    let user= req.user
+    
+    user = new UserRead(user)
+
+    req.session.usuario=user
+
     res.redirect("/productos");
   }
   //autenticacion github
   static async authenticateUserGithub(req, res) {
-    req.session.usuario = {
-      nombre: req.user.first_name,
-      apellido: req.user.last_name,
-      carrito: req.user.cartId,
-      age: req.user.age,
-      email: req.user.email,
-      rol: req.user.rol,
-    };
     res.setHeader("Content-Type", "application/json");
+
+    let user= req.user
+    
+    user = new UserRead(user)
+
+    req.session.usuario=user
+
     res.redirect("/productos");
   }
 
@@ -65,11 +65,8 @@ export class UsersControllers {
   static async errorRegister(req, res) {
     return res.redirect("/registro?error=error al registrarse");
   }
-
   static async errorGithub(req, res) {
     res.setHeader("Content-Type", "application/json");
-    res.status(200).json({
-      error: "Error al autenticar con Github",
-    });
+    return res.redirect("/registro?error=Usuario no registrado");
   }
 }

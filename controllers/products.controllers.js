@@ -1,10 +1,12 @@
-import { ManagerProductsMongoDB } from "../dao/managerProductsMongo.js";
 import mongoose from "mongoose";
-const manager = new ManagerProductsMongoDB();
+import { ProductServices } from "../service/product.service.js";
+import { ProductRead } from "../DTO/productsDTO.js";
+import { validTypeData } from "../utils.js";
 export class ProductsControllers {
   static async home(req, res) {
     res.setHeader("Content-Type", "text/html");
     // const productos=productManager.getProduct()
+
     let categoria;
     let productos;
     let direccion;
@@ -22,7 +24,7 @@ export class ProductsControllers {
     }
 
     try {
-      productos = await manager.listProductsAggregate(
+      productos = await ProductServices.listProductsAggregateService(
         categoria,
         pagina,
         direccion
@@ -56,41 +58,33 @@ export class ProductsControllers {
   }
 
   static async renderCreateProducts(req, res) {
-    const productos = await manager.listProducts();
+    const productos = await ProductServices.listProductsService();
+
     res.setHeader("Content-Type", "text/html");
     res.status(200).render("realTimesProducts", { productos: productos.docs });
   }
-
   //cargar productos
   static async loadProducts(req, res) {
     res.setHeader("Content-Type", "text/html");
     let pagina = 1;
     const usuario = req.session.usuario;
+    const esUsuario = usuario && usuario.rol === "usuario" ? true : false;
     if (req.query.pagina) {
       pagina = req.query.pagina;
     }
 
     let productos;
     try {
-      productos = await manager.listProducts(pagina);
+      productos = await ProductServices.listProductsService(pagina);
     } catch (error) {}
     let { totalPages, hasPrevPage, hasNextPage, prevPage, nextPage } =
       productos;
-    res.status(200).render("productos", {
-      productos: productos.docs,
-      hasNextPage,
-      hasPrevPage,
-      prevPage,
-      nextPage,
-      totalPages,
-      usuario,
-      login: true,
-    });
+    res.status(200).render("productos", {productos: productos.docs,hasNextPage,hasPrevPage,prevPage,nextPage,totalPages,usuario,esUsuario});
   }
 
   static async getProducts(req, res) {
     res.setHeader("Content-Type", "application/json");
-    let resultado = await manager.listProducts();
+    let resultado = await ProductServices.listProductsService();
 
     // Verificar si resultado.docs es un array antes de usar slice
     if (Array.isArray(resultado.docs) && req.query.limit) {
@@ -104,17 +98,16 @@ export class ProductsControllers {
   static async getProductId(req, res) {
     const productId = req.params.pid; // Obtén el id del producto de req.params
     res.setHeader("Content-Type", "application/json");
-    console.log("hola");
     // let resultado;
     const idValido = mongoose.Types.ObjectId.isValid(productId);
     if (!idValido) {
-      return res
-        .status(400)
-        .json({
-          error: "El id no cumple las caracteristicas de id tipo mongoDB",
-        });
+      return res.status(400).json({
+        error: "El id no cumple las caracteristicas de id tipo mongoDB",
+      });
     }
-    const { status, producto } = await manager.ProductoId(productId);
+    const { status, producto } = await ProductServices.ProductoIdService(
+      productId
+    );
 
     if (status == "200") {
       return res.status(200).json({ producto });
@@ -125,39 +118,14 @@ export class ProductsControllers {
 
   static async postCreateProduct(req, res) {
     res.setHeader("Content-Type", "application/json");
-    const checkTypes = (value, type) => typeof value === type;
-    let {
-      title,
-      description,
-      code,
-      price,
-      status = true,
-      stock,
-      category,
-      thumbnail,
-    } = req.body;
-    thumbnail = Array.isArray(thumbnail) ? thumbnail : [];
-    let OK =
-      checkTypes(title, "string") &&
-      checkTypes(description, "string") &&
-      checkTypes(code, "number") &&
-      checkTypes(price, "number") &&
-      checkTypes(status, "boolean") &&
-      checkTypes(stock, "number") &&
-      checkTypes(category, "string") &&
-      Array.isArray(thumbnail);
+  
+    let product=req.body;
+    product=new ProductRead(product)
+    console.log(product)
+    const OK=validTypeData(product)
+    console.log(OK)
     if (OK == true) {
-
-      const estado = await manager.ingresarProductos(
-        title,
-        description,
-        code,
-        price,
-        status,
-        stock,
-        category,
-        thumbnail
-      );
+      const estado = await ProductServices.ingresarProductosService(product);
 
       if (estado.status === 201) {
         return res.status(201).json(estado);
@@ -165,24 +133,29 @@ export class ProductsControllers {
         return res.status(estado.status).json(estado);
       }
     } else {
-      return res
-        .status(400)
-        .json({ error: "el valor de algunos de los campos no es admitido" });
+      return res.status(400).json({ error: "el valor de algunos de los campos no es admitido" });
     }
   }
 
-  static async putUpdateProduct(req, res)  {
+  static async putUpdateProduct(req, res) {
     res.setHeader("Content-Type", "application/json");
-    let {pid}=req.params;
-    const idValido = mongoose.Types.ObjectId.isValid(pid)
-    if(!idValido){
-      return res.status(400).json({error:"El id no cumple las caracteristicas de id tipo mongoDB"})
+    let { pid } = req.params;
+    const idValido = mongoose.Types.ObjectId.isValid(pid);
+    if (!idValido) {
+      return res
+        .status(400)
+        .json({
+          error: "El id no cumple las caracteristicas de id tipo mongoDB",
+        });
     }
-    const estado = await manager.actualizarProducto(pid,req.body)
-    if(estado==true){
-      return res.status(200).json({estado});
-    }else{
-      return res.status(400).json({estado})
+    const estado = await ProductServices.actualizarProductoService(
+      pid,
+      req.body
+    );
+    if (estado == true) {
+      return res.status(200).json({ estado });
+    } else {
+      return res.status(400).json({ estado });
     }
   }
 
@@ -190,15 +163,21 @@ export class ProductsControllers {
     try {
       res.setHeader("Content-Type", "application/json");
       let { pid } = req.params;
-      const idValido = mongoose.Types.ObjectId.isValid(pid)
-      if(!idValido){
-        return res.status(400).json({error:"El id no cumple las caracteristicas de id tipo mongoDB"})
+      const idValido = mongoose.Types.ObjectId.isValid(pid);
+      if (!idValido) {
+        return res
+          .status(400)
+          .json({
+            error: "El id no cumple las caracteristicas de id tipo mongoDB",
+          });
       }
-      const resultado = await manager.deleteProduct(pid)
-  
-      return res.status(resultado.status).json( resultado );
+      const resultado = await ProductServices.deleteProductService(pid);
+
+      return res.status(resultado.status).json(resultado);
     } catch (error) {
-      return res.status(500).json({ error: "Ha ocurrido un error en el servidor" });
+      return res
+        .status(500)
+        .json({ error: "Ha ocurrido un error en el servidor" });
     }
   }
 }

@@ -1,7 +1,6 @@
 import moment from "moment";
-import { ManagerChatMongoDB } from "../dao/managerChatMongo.js"
 import { io } from "../app.js";
-const manager = new ManagerChatMongoDB();
+import { ChatServices } from "../service/chat.service.js";
 
 function formatearHora(messages) {
     messages.map((message) => {
@@ -16,7 +15,7 @@ export class OthersControllers {
     static async renderChat(req, res) {
         try {
           const usuario = req.session.usuario;
-          let messages = await manager.loadChat();
+          let messages = await ChatServices.loadChatService();
        
         
           // Formatear la hora de cada mensaje antes de pasarlos a la plantilla
@@ -31,8 +30,9 @@ export class OthersControllers {
 
       static async renderProfile(req,res){
         res.setHeader("Content-Type", "text/html");
+        const {error}=req.query
         const usuario = req.session.usuario;
-        res.status(200).render("perfil", {usuario,login:true});
+        res.status(200).render("perfil", {usuario,login:true,error});
       }
 
 
@@ -45,7 +45,7 @@ export class OthersControllers {
         let OK = checkTypes(user, "string") && checkTypes(message, "string");
       
         if (OK) {
-          const estado = await manager.saveMessages(user, message);
+          const estado = await ChatServices.saveMessagesService(user, message);
           const time = moment().format("HH:mm"); // Mover la declaración de 'time' aquí
       
           if (estado.status === 201) {

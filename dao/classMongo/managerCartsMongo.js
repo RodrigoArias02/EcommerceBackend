@@ -1,4 +1,4 @@
-import carritoModelo from "./models/carts.model.js";
+import carritoModelo from "../models/carts.model.js";
 
 export class ManagerCartMongoDB {
   async listCart() {
@@ -13,7 +13,7 @@ export class ManagerCartMongoDB {
 
   async createCart() {
     try {
-      let nuevoCarrito = carritoModelo.create({});
+      let nuevoCarrito = await carritoModelo.create({});
       console.log("creado con exito");
       return {
         status: 201,
@@ -28,6 +28,10 @@ export class ManagerCartMongoDB {
 
   async cartId(id) {
     try {
+      if(id==null || id==undefined){
+        console.log("id invalido")
+        return { status: 404, error: "Carrito no encontrado" };
+      }
     const cartSearch = await carritoModelo.findOne({ _id: id }).populate("productos.idProducto");
     if (!cartSearch) {
       // El carrito no fue encontrado
@@ -128,10 +132,10 @@ export class ManagerCartMongoDB {
         { $set: { productos: arrayProducts } }
       );
       if (updateResult.modifiedCount === 1) {
-        console.log("if")
+        
         return { status: 200, message: "Productos actualizada con éxito" };
       } else {
-        console.log("else")
+      
         return {
           status: 404,
           error: "No se encontró el documento o no hubo cambios",
@@ -199,7 +203,7 @@ export class ManagerCartMongoDB {
 
       // Verificar si se eliminó correctamente
       if (result.deletedCount === 1) {
-        console.log(result.title);
+      
         return { status: 201, message: "Producto eliminado con éxito." };
       } else {
         return {

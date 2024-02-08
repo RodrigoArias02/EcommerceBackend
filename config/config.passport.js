@@ -1,11 +1,12 @@
 import passport from "passport";
 import local from "passport-local";
-import { ManagerUsersMongoDB } from "../dao/managerUsersMongo.js";
 import { crearHash, validPassword } from "../utils.js";
 import github from "passport-github2";
+import { UserSave } from "../DTO/usersDTO.js";
+import { UserServices } from "../service/user.service.js";
 import { configVar } from "./config.js";
+import { CartServices } from "../service/cart.service.js";
 
-const managerUsers = new ManagerUsersMongoDB();
 export const initializarPassport = () => {
   passport.use(
     "registro",
@@ -16,13 +17,15 @@ export const initializarPassport = () => {
       },
       async (req, username, password, done) => {
         try {
-          const { first_name, last_name, age, cartId, rol } = req.body;
-
+          let usuario = req.body;
+          let obtenerCart=await CartServices.createCartService()
+          console.log(obtenerCart.producto._id)
+          usuario.cartId=obtenerCart.producto._id
+          let {first_name,last_name,age,password} = req.body;
           if (
             !first_name ||
             !last_name ||
             !age ||
-            !cartId ||
             !username ||
             !password
           ) {
@@ -30,27 +33,31 @@ export const initializarPassport = () => {
             return done(null, false);
           }
 
-          const existe = await managerUsers.searchUserEmail(username);
+          let existe= await UserServices.getByEmail(username)
 
           if (existe != null) {
             console.log("El usuario ya existe");
             return done(null, false);
           }
 
-          let usuario;
+          existe= await UserServices.searchCartUsedService(usuario.cartId)
+          console.log(existe)
+          if (existe != null) {
+            console.log("El carrito ya esta en uso");
+            return done(null, false);
+          }
+          
+          let usuarioMongo;
 
           try {
             let passwordHash = crearHash(password);
-            usuario = await managerUsers.createUser(
-              first_name,
-              last_name,
-              username,
-              age,
-              passwordHash,
-              cartId,
-              rol
-            );
-            return done(null, usuario);
+
+            usuario.password=passwordHash
+            usuario=new UserSave(usuario)
+            console.log(usuario)
+            usuarioMongo= await UserServices.createUserService(usuario)
+            
+            return done(null, usuarioMongo);
           } catch (error) {
             return done(error);
           }
@@ -74,8 +81,7 @@ export const initializarPassport = () => {
             // return res.redirect('/login?error=Complete todos los datos')
             return done(null, false);
           }
-
-          let usuario = await managerUsers.searchUserEmail(username);
+          let usuario= await UserServices.getByEmail(username)
           if (!usuario) {
             // return res.redirect(`/login?error=credenciales incorrectas`)
             return done(null, false);
@@ -105,13 +111,10 @@ export const initializarPassport = () => {
       },
       async (accessToken, refreshToken, profile, done) => {
         try {
-          let usuario = await managerUsers.searchUserEmail(profile._json.email);
+
+          let usuario= await UserServices.getByEmail(profile._json.email)
+  
           if (!usuario) {
-            let nuevoUsuario = {
-              nombre: profile._json.name,
-              email: profile._json.email,
-              profile,
-            };
             console.log("El usuario no esta registrado");
             return done(null, false);
           }
@@ -131,7 +134,7 @@ export const initializarPassport = () => {
 
   passport.deserializeUser(async (email, done) => {
     try {
-      const usuario = await managerUsers.searchUserEmail(email);
+      const usuario= await UserServices.getByEmail(email)
       return done(null, usuario);
     } catch (error) {
       done(error);

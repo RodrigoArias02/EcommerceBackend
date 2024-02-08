@@ -1,21 +1,21 @@
-<h2>Id carrito:</h2>
-
 <a href="/">Volver</a>
+<h2>Id carrito: {{render.idCarrito }} </h2>
+<h3>total: ${{render.total}} </h3>
 <div id="productContainer">
-  {{#each productos}}
+  {{#each render.productos}}
     <div>
-      <p><b>id:</b>{{this._id}}</p>
       {{#if this.idProducto}}
         <p><b>Titulo: </b>{{this.idProducto.title}}</p>
-        <p>${{this.idProducto.price}}</p>
+      <p><b>cantidad: </b>{{this.quantity}}</p>
+        <p>precio: ${{this.idProducto.price}}</p>
         <p><b>Descripcion: </b>{{this.idProducto.description}}</p>
-        <p><b>Stock: </b>{{this.idProducto.stock}}</p>
-        <p><b>Category: </b>{{this.idProducto.category}}</p>
-        <img src={{this.idProducto.thumbnail}} alt="" />
+         
+        <img src={{this.idProducto.thumbnail}} width="200" />
       {{else}}
-        <p><b>Producto no disponible</b></p>
+        <p><b>El producto ah sido retirado de la tienda</b></p>
       {{/if}}
     </div>
     <hr />
   {{/each}}
+
 </div>

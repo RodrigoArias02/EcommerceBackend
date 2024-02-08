@@ -9,6 +9,8 @@ router.post("/", CartsControllers.postCreateCart );
 
 router.get("/:cid", CartsControllers.GetCartId );
 
+router.get("/:cid/purchase", CartsControllers.purchase );
+
 router.post("/:cid/product/:pid", CartsControllers.postAddProductToCart );
 
 router.put("/:cid/product/:pid", CartsControllers.putUpdateQuantity);

@@ -1,4 +1,4 @@
-import chatModelo from "./models/chat.modelo.js";
+import chatModelo from "../models/chat.modelo.js";
 export class ManagerChatMongoDB {
     async loadChat() {
         try {
@@ -11,7 +11,6 @@ export class ManagerChatMongoDB {
     }
 
     async saveMessages(user,message){
-        
         try {
             let newMessage = chatModelo.create({user,message})
             console.log("creado con exito")

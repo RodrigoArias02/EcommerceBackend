@@ -1,4 +1,4 @@
-import ProductoModelo from "./models/product.modelo.js";
+import ProductoModelo from "../models/product.modelo.js";
 
 export class ManagerProductsMongoDB {
   async listProducts(pagina) {
@@ -78,37 +78,20 @@ export class ManagerProductsMongoDB {
         status:500,
         playload:[]
       }
+      return propiedades
     }
   }
 
-  async ingresarProductos(
-    title,
-    description,
-    code,
-    price,
-    status,
-    stock,
-    category,
-    thumbnail
-  ) {
+  async ingresarProductos(product) {
     try {
-      const existe = await ProductoModelo.findOne({ code }).lean();
+      const existe = await ProductoModelo.findOne({ code:product.code }).lean();
       if (existe != null) {
         return {
           status: 400,
           error: `El producto con el siguiente código ya existe:`,
         };
       }
-      let nuevoProducto = ProductoModelo.create({
-        title,
-        description,
-        code,
-        price,
-        status,
-        stock,
-        category,
-        thumbnail,
-      });
+      let nuevoProducto = ProductoModelo.create(product);
       console.log("creado con exito");
       return {
         status: 201,
@@ -195,7 +178,7 @@ export class ManagerProductsMongoDB {
 
       // Verificar si se eliminó correctamente
       if (result.deletedCount === 1) {
-        console.log(result.title);
+       
         return { status: 201, message: "Producto eliminado con éxito." };
       } else {
         return {

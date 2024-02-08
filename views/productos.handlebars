@@ -2,6 +2,8 @@
 <h4>email: {{usuario.email}} </h4>
 <h4>age: {{usuario.age}} </h4>
 
+
+
 <h4>Rol: {{usuario.rol}} </h4>
 <input type="text" id="idcarrito" value="{{usuario.carrito}}" placeholder="Escriba id de carrito">
 <div id="productContainer">
@@ -16,6 +18,7 @@
       <img src="{{this.thumbnail}}" width="400px" alt="" />
     </div>
     <button data-id="{{this._id}}" class="btnEnviarId">Añadir al carrito</button>
+
     <hr />
   {{/each}}
 </div>

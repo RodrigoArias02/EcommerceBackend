@@ -12,20 +12,32 @@ const auth=(req,res,next)=>{
     res.redirect("/login?error=Su sesion expiro, ingrese nuevamente")
     return
   }
-
   next()
 }
-
+const authAdmin=(req,res,next)=>{
+  if(req.session.usuario.rol=="admin"){
+    res.redirect("/perfil?error=Usted no tiene el rol indicado para ingresar a dicha seccion")
+    return
+  }
+  next()
+}
+const authUser=(req,res,next)=>{
+  if(req.session.usuario.rol=="usuario"){
+    res.redirect("/perfil?error=Usted no tiene el rol indicado para ingresar a dicha seccion")
+    return
+  }
+  next()
+}
 // Ruta principal
 router.get("/", ProductsControllers.home);
 
-router.get("/ingresarProductos", ProductsControllers.renderCreateProducts);
+router.get("/ingresarProductos",auth ,authUser, ProductsControllers.renderCreateProducts);
 
-router.get("/productos", auth ,ProductsControllers.loadProducts);
+router.get("/productos", auth, authAdmin ,ProductsControllers.loadProducts);
 
 router.get("/carts/:cid", CartsControllers.renderCart );
 
-router.get("/chat", auth ,OthersControllers.renderChat );
+router.get("/chat",auth ,authAdmin ,OthersControllers.renderChat );
 
 router.get("/login", UsersControllers.renderLoginUser);
 
