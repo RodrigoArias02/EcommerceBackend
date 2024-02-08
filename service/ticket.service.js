@@ -11,27 +11,27 @@ class TicketService{
     async createTicketService(carritoId){
         const { productosSinStock, nuevasQuantity } = await this.checkStock(carritoId);
         let check=productosSinStock
-        let productosSinProcesar=[]
         const {carrito} = check.length > 0 ? await this.DeleteProduct(carritoId,check): await CartServices.searchCartIdService(carritoId);
-        
+        console.log(carrito)
         let user = await UserServices.searchCartUsedService(carritoId)
       
         let TicketCreate= new TicketSave(carrito,user.email)
-    
+        await this.dao.create(TicketCreate)
+      
         let newcarrito=new CartAmount(carrito)
-
-        for (const element of productosSinStock) {
-
-            productosSinProcesar.push (await ProductServices.ProductoIdService(element))
-          
-        }
-    
-        TicketCreate= await this.dao.create(TicketCreate)
-
+      
         for (const element of nuevasQuantity) {
             await ProductServices.actualizarProductoService(element._id, {stock:element.stock});
         }
         let generateTicket=new ReadTicket(user,newcarrito,productosSinStock)
+        await CartServices.deleteTotalProductCartService(carritoId)
+        for (const IdProducto of productosSinStock) {
+            console.log("_____")
+            console.log(IdProducto)
+            console.log("_____")
+            await CartServices.addProductToCartService(carritoId,IdProducto)
+        }
+      
         return generateTicket
     }
 
@@ -47,7 +47,7 @@ class TicketService{
         // Función que verifica si el stock es suficiente para la cantidad y registra el id si no lo es
         const stockSuficiente = valores.some(item => {
             if (item.stock < item.cantidad) {
-                productosSinStock.push(item._id);
+                productosSinStock.push({idProducto:item._id, quantity:item.cantidad});
 
                 return true; // Indica que hay al menos un producto sin stock suficiente
             }else{
@@ -63,15 +63,15 @@ class TicketService{
         } else {
             console.log('El stock es suficiente para todos los productos.');
         }
-        console.log(nuevasQuantity)
-        // ProductServices.actualizarProductoService()
-        // const UpdateProducto=
+
         return { productosSinStock, nuevasQuantity };
     }
 
     async DeleteProduct(idCart, productosSinStock) {
         for (const IdProducto of productosSinStock) {
-            await CartServices.deleteProductCartService(idCart, IdProducto);
+            console.log(IdProducto)
+            await CartServices.deleteProductCartService(idCart, IdProducto.idProducto);
+            console.log("BORRAMOS ELEMENTOS")
         }
     
         return await CartServices.searchCartIdService(idCart);
