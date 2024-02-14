@@ -19,7 +19,7 @@ export const initializarPassport = () => {
         try {
           let usuario = req.body;
           let obtenerCart=await CartServices.createCartService()
-          console.log(obtenerCart.producto._id)
+      
           usuario.cartId=obtenerCart.producto._id
           let {first_name,last_name,age,password} = req.body;
           if (

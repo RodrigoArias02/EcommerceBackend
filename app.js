@@ -62,16 +62,22 @@ import routerViews from "./routes/viewsRoutes.js";
 import routerChat from "./routes/chatRoutes.js";
 import routerSessions from "./routes/sessionsRoutes.js";
 import { config } from "dotenv";
+import { errorHandler } from "./middlewares/errorHandler.js";
+
 
 app.use("/api/products", routerProducts);
 app.use("/api/carts", routerCart);
 app.use("/", routerViews);
 app.use("/chat", routerChat);
 app.use("/api/sessions", routerSessions);
-
+app.use(errorHandler)
 app.use((req, res, next) => {
   res.status(404).send("La ruta no se encontró");
 });
+
+
+
+
 
 // Iniciar servidor
 let serverHttp = app.listen(PORT, () => {

@@ -1,6 +1,7 @@
 import moment from "moment";
 import { io } from "../app.js";
 import { ChatServices } from "../service/chat.service.js";
+import { generarProductos } from "../mock.js";
 
 function formatearHora(messages) {
     messages.map((message) => {
@@ -56,8 +57,20 @@ export class OthersControllers {
           }
         } else {
           return res
-            .status(400)
-            .json({ error: "El valor de algunos de los campos no es admitido" });
+            // .status(400)
+            // .json({ //error: "El valor de algunos de los campos no es admitido" });
+        }
+      }
+
+      static async mock(req, res) {
+        try {
+          res.setHeader("Content-Type", "application/json");
+          let resultado=generarProductos()
+          return res.status(200).json(resultado);
+        } catch (error) {
+          return res
+            .status(500)
+            .json({ error: "Ha ocurrido un error en el servidor" });
         }
       }
 }

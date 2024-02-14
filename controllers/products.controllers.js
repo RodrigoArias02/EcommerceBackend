@@ -2,6 +2,13 @@ import mongoose from "mongoose";
 import { ProductServices } from "../service/product.service.js";
 import { ProductRead } from "../DTO/productsDTO.js";
 import { validTypeData } from "../utils.js";
+import { generarProductos } from "../mock.js";
+import { CustomError } from "../utils/customErrors.js";
+import { STATUS_CODES, ERRORES_INTERNOS } from "../utils/typesErrors.js";
+import { errorArgumentos } from "../utils/errors.js";
+
+
+
 export class ProductsControllers {
   static async home(req, res) {
     res.setHeader("Content-Type", "text/html");
@@ -76,6 +83,10 @@ export class ProductsControllers {
     let productos;
     try {
       productos = await ProductServices.listProductsService(pagina);
+      
+      //usando FAKER ↓↓↓↓↓
+      // productos.docs=generarProductos()
+
     } catch (error) {}
     let { totalPages, hasPrevPage, hasNextPage, prevPage, nextPage } =
       productos;
@@ -118,12 +129,21 @@ export class ProductsControllers {
 
   static async postCreateProduct(req, res) {
     res.setHeader("Content-Type", "application/json");
-  
-    let product=req.body;
-    product=new ProductRead(product)
-    console.log(product)
+    let product = req.body;
+    const propiedadesPermitidas = ["title", "description", "code", "price", "status", "stock", "category", "thumbnail"];
+    let propiedadesQueLlegan = Object.keys(product);
+    let valido = propiedadesQueLlegan.every((propiedad) =>
+      propiedadesPermitidas.includes(propiedad)
+    );
+
+      if(!valido){
+        // return  res.status(400).json({ error: "Campos no validos" });
+        throw CustomError.CustomError("Complete name", "Falta completar la propiedad name", STATUS_CODES.ERROR_ARGUMENTOS, ERRORES_INTERNOS.ARGUMENTOS, errorArgumentos(product))
+      }
+
+    product= ProductRead(product)
     const OK=validTypeData(product)
-    console.log(OK)
+   
     if (OK == true) {
       const estado = await ProductServices.ingresarProductosService(product);
 
@@ -133,7 +153,7 @@ export class ProductsControllers {
         return res.status(estado.status).json(estado);
       }
     } else {
-      return res.status(400).json({ error: "el valor de algunos de los campos no es admitido" });
+      return  res.status(400).json({ error: "el valor de algunos de los campos no es admitido" });
     }
   }
 
@@ -180,4 +200,6 @@ export class ProductsControllers {
         .json({ error: "Ha ocurrido un error en el servidor" });
     }
   }
+
+
 }

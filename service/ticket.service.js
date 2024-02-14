@@ -26,9 +26,7 @@ class TicketService{
         let generateTicket=new ReadTicket(user,newcarrito,productosSinStock)
         await CartServices.deleteTotalProductCartService(carritoId)
         for (const IdProducto of productosSinStock) {
-            console.log("_____")
-            console.log(IdProducto)
-            console.log("_____")
+
             await CartServices.addProductToCartService(carritoId,IdProducto)
         }
       

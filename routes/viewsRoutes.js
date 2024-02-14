@@ -44,4 +44,6 @@ router.get("/login", UsersControllers.renderLoginUser);
 router.get("/registro", UsersControllers.renderRegisterUser);
 
 router.get("/perfil", auth, OthersControllers.renderProfile)
+
+router.get("/mockingproducts", OthersControllers.mock)
 export default router;

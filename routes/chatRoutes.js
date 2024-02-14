@@ -6,4 +6,5 @@ const router = express();
 // Ruta principal
 router.post("/", OthersControllers.postChatSendMessage );
 
+
 export default router;
