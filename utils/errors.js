@@ -1,10 +1,11 @@
-export const errorArgumentos=({name, ...otros})=>{
+export const errorArgumentos=(valido,{ ...otros})=>{
     return `
-Error en argumentos:
-Argumentos obligatorios:
-    - name: esperado tipo string, recibido ${name}   
-Argumentos opcionales:
-    - powers, alias, team, publisher, recibidos ${JSON.stringify(otros)}
+Error en Propiedades:
+Validacion en propiedades:
+    - validacion: esperado true, recibido ${valido}   
+propiedades validas:
+"title","description","code","price","status","stock","category","thumbnail"
+-recibidos ${JSON.stringify(otros)}
 
 `
 

@@ -3,7 +3,7 @@ import { UsersControllers } from "../controllers/usuarios.controllers.js";
 import { ProductsControllers } from "../controllers/products.controllers.js";
 import { CartsControllers } from "../controllers/carts.controllers.js";
 import { OthersControllers } from "../controllers/other.controllers.js";
-
+import {CustomError} from "../utils/customErrors.js";
 
 const router = express();
 
@@ -46,4 +46,22 @@ router.get("/registro", UsersControllers.renderRegisterUser);
 router.get("/perfil", auth, OthersControllers.renderProfile)
 
 router.get("/mockingproducts", OthersControllers.mock)
+
+router.get("/prueba",(req, res) => {
+  let pepe
+  console.log("a")
+  if(!pepe){
+  
+    throw CustomError.createError(
+      "Error en propiedades",
+      "propiedades invalidas",
+      400, // Cambiar statusCode a 400
+      400,
+      "Hubo un error en las propiedades"
+  );
+
+}
+return res.status(201).json(estado);
+});
+
 export default router;

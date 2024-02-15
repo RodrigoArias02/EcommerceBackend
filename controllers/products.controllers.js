@@ -3,11 +3,10 @@ import { ProductServices } from "../service/product.service.js";
 import { ProductRead } from "../DTO/productsDTO.js";
 import { validTypeData } from "../utils.js";
 import { generarProductos } from "../mock.js";
-import { CustomError } from "../utils/customErrors.js";
+
 import { STATUS_CODES, ERRORES_INTERNOS } from "../utils/typesErrors.js";
 import { errorArgumentos } from "../utils/errors.js";
-
-
+import { CustomError } from "../utils/customErrors.js";
 
 export class ProductsControllers {
   static async home(req, res) {
@@ -83,14 +82,24 @@ export class ProductsControllers {
     let productos;
     try {
       productos = await ProductServices.listProductsService(pagina);
-      
+
       //usando FAKER ↓↓↓↓↓
       // productos.docs=generarProductos()
-
     } catch (error) {}
     let { totalPages, hasPrevPage, hasNextPage, prevPage, nextPage } =
       productos;
-    res.status(200).render("productos", {productos: productos.docs,hasNextPage,hasPrevPage,prevPage,nextPage,totalPages,usuario,esUsuario});
+    res
+      .status(200)
+      .render("productos", {
+        productos: productos.docs,
+        hasNextPage,
+        hasPrevPage,
+        prevPage,
+        nextPage,
+        totalPages,
+        usuario,
+        esUsuario,
+      });
   }
 
   static async getProducts(req, res) {
@@ -127,46 +136,61 @@ export class ProductsControllers {
     }
   }
 
-  static async postCreateProduct(req, res) {
-    res.setHeader("Content-Type", "application/json");
-    let product = req.body;
-    const propiedadesPermitidas = ["title", "description", "code", "price", "status", "stock", "category", "thumbnail"];
-    let propiedadesQueLlegan = Object.keys(product);
-    let valido = propiedadesQueLlegan.every((propiedad) =>
-      propiedadesPermitidas.includes(propiedad)
-    );
-
-      if(!valido){
-        // return  res.status(400).json({ error: "Campos no validos" });
-        throw CustomError.CustomError("Complete name", "Falta completar la propiedad name", STATUS_CODES.ERROR_ARGUMENTOS, ERRORES_INTERNOS.ARGUMENTOS, errorArgumentos(product))
-      }
-
-    product= ProductRead(product)
-    const OK=validTypeData(product)
-   
-    if (OK == true) {
-      const estado = await ProductServices.ingresarProductosService(product);
-
-      if (estado.status === 201) {
+  static async postCreateProduct(req, res, next) {
+    try {
+        res.setHeader("Content-Type", "application/json");
+        let product = req.body;
+        const propiedadesPermitidas = [
+            "title",
+            "description",
+            "code",
+            "price",
+            "status",
+            "stock",
+            "category",
+            "thumbnail",
+        ];
+        let propiedadesQueLlegan = Object.keys(product);
+        let valido = propiedadesQueLlegan.every((propiedad) =>
+            propiedadesPermitidas.includes(propiedad)
+        );
+        console.log(valido)
+        console.log(product)
+        if (!valido) {
+          throw CustomError.createError(
+            "Error en propiedades",
+            "Propiedades inválidas",
+            STATUS_CODES.ERROR_ARGUMENTOS, // Cambiar statusCode a 400
+            ERRORES_INTERNOS.ARGUMENTOS,
+            errorArgumentos(valido,req.body)
+        );
+        }
+        product =new ProductRead(product);
+        const OK = validTypeData(product);
+        if (OK != true) {
+            return res.status(400).json({ error: "El valor de algunos de los campos no es admitido" });
+        }
+       
+        const estado = await ProductServices.ingresarProductosService(product);
+        if (estado.status != 201) {
+            return res.status(estado.status).json(estado);
+        }
         return res.status(201).json(estado);
-      } else {
-        return res.status(estado.status).json(estado);
-      }
-    } else {
-      return  res.status(400).json({ error: "el valor de algunos de los campos no es admitido" });
+    } catch (error) {
+        // Pasar el error al siguiente middleware (errorHandler)
+        next(error);
     }
-  }
+}
+
 
   static async putUpdateProduct(req, res) {
     res.setHeader("Content-Type", "application/json");
     let { pid } = req.params;
     const idValido = mongoose.Types.ObjectId.isValid(pid);
     if (!idValido) {
-      return res
-        .status(400)
-        .json({
-          error: "El id no cumple las caracteristicas de id tipo mongoDB",
-        });
+      return res.status(400).json({
+        error: "El id no cumple las caracteristicas de id tipo mongoDB",
+      });
     }
     const estado = await ProductServices.actualizarProductoService(
       pid,
@@ -185,11 +209,9 @@ export class ProductsControllers {
       let { pid } = req.params;
       const idValido = mongoose.Types.ObjectId.isValid(pid);
       if (!idValido) {
-        return res
-          .status(400)
-          .json({
-            error: "El id no cumple las caracteristicas de id tipo mongoDB",
-          });
+        return res.status(400).json({
+          error: "El id no cumple las caracteristicas de id tipo mongoDB",
+        });
       }
       const resultado = await ProductServices.deleteProductService(pid);
 
@@ -200,6 +222,4 @@ export class ProductsControllers {
         .json({ error: "Ha ocurrido un error en el servidor" });
     }
   }
-
-
 }
