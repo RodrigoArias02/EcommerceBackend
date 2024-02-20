@@ -1,0 +1,6 @@
+{"level":"debug","message":"Debug message","timestamp":"2024-02-20T00:46:37.919Z"}
+{"level":"http","message":"HTTP message","timestamp":"2024-02-20T00:46:37.920Z"}
+{"level":"info","message":"Info message","timestamp":"2024-02-20T00:46:37.920Z"}
+{"level":"warning","message":"Warning message","timestamp":"2024-02-20T00:46:37.920Z"}
+{"level":"error","message":"Error message","timestamp":"2024-02-20T00:46:37.920Z"}
+{"level":"fatal","message":"Fatal message","timestamp":"2024-02-20T00:46:37.920Z"}

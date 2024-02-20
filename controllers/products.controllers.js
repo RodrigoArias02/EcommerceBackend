@@ -180,6 +180,7 @@ export class ProductsControllers {
         // Pasar el error al siguiente middleware (errorHandler)
         next(error);
     }
+    next();
 }
 
 

@@ -15,3 +15,8 @@ export const errorHandler = (error, req, res, next) => {
 
     next();
 }
+
+export const errorLoggers=(err, req, res, next) => {
+    req.logger.error(err.stack);
+    res.status(500).send('Something broke!');
+};

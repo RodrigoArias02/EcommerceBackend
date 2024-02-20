@@ -47,21 +47,6 @@ router.get("/perfil", auth, OthersControllers.renderProfile)
 
 router.get("/mockingproducts", OthersControllers.mock)
 
-router.get("/prueba",(req, res) => {
-  let pepe
-  console.log("a")
-  if(!pepe){
-  
-    throw CustomError.createError(
-      "Error en propiedades",
-      "propiedades invalidas",
-      400, // Cambiar statusCode a 400
-      400,
-      "Hubo un error en las propiedades"
-  );
-
-}
-return res.status(201).json(estado);
-});
+router.get("/loggerTest", OthersControllers.loggerTest)
 
 export default router;

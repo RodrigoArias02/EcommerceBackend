@@ -16,5 +16,6 @@ export const configVar={
     DBNAME: process.env.DBNAME,
     SECRETSESSION:process.env.SECRETSESSION,
     CLIENTSECRETGITHUB:process.env.CLIENTSECRETGITHUB,
-    CLIENTIDGITHUB:process.env.CLIENTIDGITHUB
+    CLIENTIDGITHUB:process.env.CLIENTIDGITHUB,
+    ENTORNO:process.env.ENTORNO
 }

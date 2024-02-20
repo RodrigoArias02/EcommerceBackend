@@ -10,6 +10,7 @@ import MongoStore from "connect-mongo";
 import { initializarPassport } from "./config/config.passport.js";
 import passport from "passport";
 import { configVar } from "./config/config.js";
+import { middlog } from "./utils/loggers.js";
 // import ProductManager from './functions/functionProducts.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -48,6 +49,7 @@ app.set("view engine", "handlebars");
 app.set("views", join(__dirname, "views"));
 
 // Middleware
+app.use(middlog)
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(join(__dirname, "./public")));
@@ -62,7 +64,7 @@ import routerViews from "./routes/viewsRoutes.js";
 import routerChat from "./routes/chatRoutes.js";
 import routerSessions from "./routes/sessionsRoutes.js";
 import { config } from "dotenv";
-import { errorHandler } from "./middlewares/errorHandler.js";
+import { errorHandler, errorLoggers } from "./middlewares/errorHandler.js";
 
 
 app.use("/api/products", routerProducts);
@@ -73,7 +75,7 @@ app.use("/api/sessions", routerSessions);
 
 
 app.use(errorHandler);
-
+app.use(errorLoggers)
 app.use((req, res, next) => {
   res.status(404).send("La ruta no se encontró");
 });
