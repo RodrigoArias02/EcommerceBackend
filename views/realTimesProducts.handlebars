@@ -1,11 +1,12 @@
 <h1>Productos con WebSocket</h1>
 <a href="/"><h3>Volver al inicio</h3></a>
 <h2>Ingresar nuevo producto</h2>
-<form id="miFormulario">
+<form id="miFormulario" action="/api/products" method="post">
   <input type="text" name="title" placeholder="Titulo" />
   <input type="text" name="description" placeholder="Descripcion" />
   <input type="number" name="code" placeholder="code" />
   <input type="number" name="price" placeholder="price" />
+  <input type="email" name="owner" value="{{email}}"  />
   <select name="status" id="">
     <option value="true">true</option>
     <option value="false">false</option>
@@ -15,11 +16,15 @@
     <option value="Comida">Comida</option>
     <option value="Electrodomesticos">Electrodomesticos</option>
   </select>
-  <input type="text" name="url" placeholder="UrlImagenPrueba" />
-  <button type="button" id="btn" onclick="enviarFormulario()">Enviar</button>
+  <input type="text" name="thumbnail" placeholder="UrlImagenPrueba" />
+  <input type="submit" value="enviar">
+
 </form>
 <form action="">
   <h2>Eliminar elemento</h2>
+  {{#if error}}
+<div style="color: red;"> {{error}} </div>
+{{/if}}
   <input type="text" name="id" placeholder="Id">
   <button type="button" id="enviarId">Enviar</button>
 </form>
@@ -38,11 +43,15 @@
         <p><b>Descripcion: </b>{{this.description}}</p>
         <p><b>Stock: </b>{{this.stock}}</p>
         <p><b>Category: </b>{{this.category}}</p>
-        <img src={{this.thumbnail}} width="400px" alt="">
+        <p><b>Owner: </b>{{this.owner}}</p>
+        {{#if this.thumbnail}}
+            <img src={{this.thumbnail}} width="400px" alt="">
+        {{/if}}
     </div>
     <hr>
   {{/each}}
 </div>
+
 
 <script src="socket.io/socket.io.js"></script>
 <script src="js/getProducts.js"></script>

@@ -2,15 +2,21 @@ import ProductoModelo from "../models/product.modelo.js";
 
 export class ManagerProductsMongoDB {
   async listProducts(pagina) {
+   
     try {
+      
       let prodPaginate = await ProductoModelo.paginate(
         {},
-        { lean: true, limit: 3, page: pagina }
+        { lean: true, limit: 113, page: pagina }
       );
-      return prodPaginate;
+      return {status:200, elements:prodPaginate };
     } catch (error) {
-      console.error("Error al listar productos:", error);
-      return null;
+      const errores={
+        status:500,
+        messageError:"Error al listar productos:",
+        error:error
+      }
+      return errores;
     }
   }
 
@@ -38,7 +44,6 @@ export class ManagerProductsMongoDB {
           $limit: PAGE_SIZE,
         }
       );
-
       
       // Agregar etapa de ordenación por precio (ascendente o descendente)
       aggregatePipeline.push({
@@ -72,23 +77,24 @@ export class ManagerProductsMongoDB {
 
       return propiedades;
     } catch (error) {
-      console.error("Error al obtener productos:", error);
-      // Manejar el error según tus necesidades
       const propiedades = {
         status:500,
-        playload:[]
+        messageError:"Error al intentar listar los productos",
+        error:error
       }
       return propiedades
     }
   }
 
   async ingresarProductos(product) {
+    
     try {
       const existe = await ProductoModelo.findOne({ code:product.code }).lean();
       if (existe != null) {
         return {
           status: 400,
-          error: `El producto con el siguiente código ya existe:`,
+          messageError: `Ya hay un producto registrado con ese codigo: ${product.code}`,
+          error:"Ah ingresado un codigo ya registrado."
         };
       }
       let nuevoProducto = ProductoModelo.create(product);
@@ -100,7 +106,7 @@ export class ManagerProductsMongoDB {
       };
     } catch (error) {
       console.error("Error al añadir el producto:", error);
-      return { status: 400, error: "Error al añadir el producto a la BD" };
+      return { status: 400, messageError: "Error al añadir el producto a la BD",error:error };
     }
   }
   async ProductoId(id) {

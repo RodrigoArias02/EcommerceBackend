@@ -64,7 +64,7 @@ import routerViews from "./routes/viewsRoutes.js";
 import routerChat from "./routes/chatRoutes.js";
 import routerSessions from "./routes/sessionsRoutes.js";
 import { config } from "dotenv";
-import { errorHandler, errorLoggers } from "./middlewares/errorHandler.js";
+import { ErrorSearchRouter, errorHandler, errorLoggers } from "./middlewares/errorHandler.js";
 
 
 app.use("/api/products", routerProducts);
@@ -76,9 +76,7 @@ app.use("/api/sessions", routerSessions);
 
 app.use(errorHandler);
 app.use(errorLoggers)
-app.use((req, res, next) => {
-  res.status(404).send("La ruta no se encontró");
-});
+app.use(ErrorSearchRouter)
 
 
 
@@ -91,18 +89,6 @@ export const io = new Server(serverHttp);
 
 io.on("connection", (socket) => {
   console.log(`Se conecto el cliente ${socket.id}`);
-  socket.on("producto", (datos) => {
-    io.emit("NuevoProducto", datos);
-
-    console.log("emitiendo desde el servidor:");
-  });
-  //escuchamos que viene el array nuevo
-  socket.on("ProductoEliminado", (datos) => {
-    //emitimos al cliente para que lo escuche y luego haga el render
-    io.emit("nuevoProductoEliminado", datos);
-
-    console.log("emitiendo desde el servidor:");
-  });
 });
 try {
   await mongoose.connect(

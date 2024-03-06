@@ -1,0 +1,24 @@
+<h2>Ingrese una nueva contraseña</h2>
+{{#if error}}
+<div style="color: red;"> {{error}} </div>
+{{/if}}
+<form action="/api/sessions/recupero03" id="passwordForm" method="post">
+  <input type="password" id="primaryPassword" name="primaryPassword" placeholder="Ingrese contraseña" />
+  <input type="password" id="secondPassword" name="secondPassword" placeholder="Ingrese contraseña nuevamente"/>
+  <p id="msg"></p>
+  <input type="text" name="token" value="{{token}}"/>
+  <input type="submit" value="enviar"/>
+</form>
+
+<script>
+  document.getElementById("passwordForm").onsubmit = function() {
+    let password1 = document.getElementById("primaryPassword").value;
+    let password2 = document.getElementById("secondPassword").value;
+    let msg = document.getElementById("msg");
+    if (password1 !== password2) {
+      msg.innerHTML="Las contraseñas no coinciden"
+      
+      return false; // Evita que se envíe el formulario si las contraseñas no coinciden
+    }
+  };
+</script>

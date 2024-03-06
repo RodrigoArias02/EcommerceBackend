@@ -17,5 +17,6 @@ export const configVar={
     SECRETSESSION:process.env.SECRETSESSION,
     CLIENTSECRETGITHUB:process.env.CLIENTSECRETGITHUB,
     CLIENTIDGITHUB:process.env.CLIENTIDGITHUB,
-    ENTORNO:process.env.ENTORNO
+    ENTORNO:process.env.ENTORNO,
+    URL:process.env.URL
 }

@@ -1,0 +1,11 @@
+<h2>Recuperar cuenta</h2>
+{{#if error}}
+<div style="color: red;"> {{error}} </div>
+{{/if}}
+{{#if message}}
+<div style="color: rgb(65, 199, 28);"> {{message}} </div>
+{{/if}}
+<form action="/api/sessions/recupero01", method="post">
+  <input type="email" name="email" placeholder="Ingrese el email"/>
+  <input type="submit" value="Enviar">
+</form>

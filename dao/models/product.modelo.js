@@ -33,6 +33,11 @@ const productoSchema = new mongoose.Schema({
   thumbnail: {
     type: [String], // Puede ser un array de strings si hay múltiples thumbnails
   },
+  owner:{
+    type: String,
+    default: 'admin', 
+  },
+
 });
 productoSchema.plugin(paginate)
 //Mismo nombre de coleccion

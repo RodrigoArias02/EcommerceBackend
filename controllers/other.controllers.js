@@ -14,12 +14,18 @@ export class OthersControllers {
   static async renderChat(req, res) {
     try {
       const usuario = req.session.usuario;
+      let login
+      if(!usuario){
+        login=false
+      }else{
+        login=true
+      }
       let messages = await ChatServices.loadChatService();
 
       // Formatear la hora de cada mensaje antes de pasarlos a la plantilla
       messages = formatearHora(messages);
       res.setHeader("Content-Type", "text/html");
-      res.status(200).render("chat", { messages, usuario });
+      res.status(200).render("chat", { messages, usuario,login });
     } catch (error) {
       console.error("Error al cargar el chat:", error);
       res.status(500).send("Error interno del servidor");
@@ -30,7 +36,13 @@ export class OthersControllers {
     res.setHeader("Content-Type", "text/html");
     const { error } = req.query;
     const usuario = req.session.usuario;
-    res.status(200).render("perfil", { usuario, login: true, error });
+    let login
+    if(!usuario){
+      login=false
+    }else{
+      login=true
+    }
+    res.status(200).render("perfil", { usuario, login, error });
   }
 
   static async postChatSendMessage(req, res) {
@@ -87,6 +99,31 @@ export class OthersControllers {
       return res
         .status(500)
         .json({ error: "Ha ocurrido un error en el servidor" });
+    }
+  }
+
+  static async renderEmail01(req, res, next) {
+    try {
+      let {message,error}=req.query
+
+      res.status(200).render("mail/recuperoEmail01",{message,error});
+    } catch (error) {
+      return res
+        .status(500)
+        .json({ error: "Ha ocurrido un error en el servidor" });
+    }
+  }
+
+  static async renderEmail02(req, res, next) {
+    let {token,error}=req.query
+    try {
+
+      if(!token){
+        return res.status(400).json({ error: "Token invalido" });
+      }
+      res.status(200).render("mail/recoverEmail02",{token,error});
+    } catch (error) {
+      return res.status(500).json({ error: "Ha ocurrido un error en el servidor" });
     }
   }
 }

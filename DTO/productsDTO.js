@@ -1,15 +1,17 @@
-export class ProductRead{
-    constructor(product){
-        this.title=product.title
-        this.description=product.description
-        this.code=product.code
-        this.price=product.price
-        this.status=product.status
-        this.stock=product.stock
-        this.category=product.category
-        this.thumbnail=product.thumbnail
+export class ProductRead {
+    constructor(product) {
+        this.title = product.title;
+        this.description = product.description;
+        this.code = Number(product.code); // Convertir a número
+        this.price = Number(product.price); // Convertir a número
+        this.status = (product.status === 'active'); 
+        this.stock = Number(product.stock); // Convertir a número
+        this.category = product.category;
+        this.thumbnail = [product.thumbnail];
+        this.owner = product.owner;
     }
 }
+
 export class ProductSave{
     constructor(product){
         this.first_name=product.first_name

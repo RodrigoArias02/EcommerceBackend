@@ -14,20 +14,54 @@ export const crearHash=(password)=>bcrypt.hashSync(password, bcrypt.genSaltSync(
 export const validPassword=(usuario, password)=>bcrypt.compareSync(password,usuario.password)
 
 export function validTypeData(product){
-    const checkTypes = (value, type) => typeof value === type;
+    const checkTypes = (value, type) => typeof value == type;
     product.thumbnail = Array.isArray(product.thumbnail) ? product.thumbnail : [];
-    let OK =
-      checkTypes(product.title, "string") &&
-      checkTypes(product.description, "string") &&
-      checkTypes(product.code, "number") &&
-      checkTypes(product.price, "number") &&
-      checkTypes(product.status, "boolean") &&
-      checkTypes(product.stock, "number") &&
-      checkTypes(product.category, "string") &&
-      Array.isArray(product.thumbnail);
-return OK
+
+    const unacceptableValues = {
+        title:"string",
+        description: "string",
+        code: "number",
+        price: "number",
+        status: "boolean",
+        stock: "number",
+        category: "string",
+        thumbnail: "object",
+        owner: "string",
+    };
+
+    for (const key in product) {
+        if (!checkTypes(product[key], unacceptableValues[key])) {
+            // Si el tipo de dato no es válido, devolver el nombre de la clave
+            return { clave: key, valor: product[key] };
+        }
+    }
+
+    // Si todo está bien, devolver null
+    return null;
 }
 
 export function generateUniqueCode() {
     return uuidv4(); // Generar un UUID v4 como código único
 }
+
+export function validateProperties(product){
+    console.log(product)
+    const propiedadesPermitidas = [
+        "title",
+        "description",
+        "code",
+        "price",
+        "owner",
+        "status",
+        "stock",
+        "category",
+        "thumbnail",
+      
+    ];
+    let propiedadesQueLlegan = Object.keys(product);
+    let valido = propiedadesQueLlegan.every((propiedad) =>
+        propiedadesPermitidas.includes(propiedad)
+    );
+    return valido
+}
+

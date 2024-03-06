@@ -9,7 +9,7 @@ export class CartsControllers {
   static async renderCart(req, res) {
     res.setHeader("Content-Type", "text/html");
     const productId = req.params.cid; // Obtén el id del producto de req.params
-
+    const login=req.session.usuario ? true : false
     const { status, carrito } = await CartServices.searchCartIdService(productId);
 
     let objectAmount=new CartAmount(carrito)
@@ -17,7 +17,7 @@ export class CartsControllers {
     let render=new RenderCart(objectAmount,carrito)
 
     if (status == 200) {
-      res.status(200).render("cart", {render});
+      res.status(200).render("cart", {render,login});
     } else if (status == 400) {
       return res.status(400).json({ error: "No se encontro el id" });
     } else {
@@ -59,6 +59,7 @@ export class CartsControllers {
 
   static async postAddProductToCart(req, res) {
     res.setHeader("Content-Type", "application/json");
+    const usuario=req.session.usuario
     const productId = req.params.pid; // Obtén el id del producto de req.params
     const cartId = req.params.cid; // Obtén el id del producto de req.params
     const idValido = mongoose.Types.ObjectId.isValid(cartId);
@@ -73,6 +74,10 @@ export class CartsControllers {
     if (validacion.status != 200) {
       return res.status(400).json(validacion.error);
     }
+    if(validacion.producto.owner==usuario.email){
+      return res.status(400).json({error:"No puedes añadir a tu carrito un producto que tu creaste...!!!"});
+    }
+
     let formProduct = {
       idProducto: validacion.producto._id,
       quantity: 1,

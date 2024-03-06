@@ -10,8 +10,15 @@ class UserService{
     async getByEmail(email){
         return await this.dao.searchUserEmail(email)
     }
+    async searchUserIdService(id){
+        return await this.dao.searchUseriId(id)
+    }
     async searchCartUsedService(cartId){
         return await this.dao.searchCartUsed(cartId)
+    }
+
+    async updateUserService(email,user){
+        return await this.dao.updateUser(email,user)
     }
 
 

@@ -58,6 +58,9 @@ export class ManagerCartMongoDB {
     let { carrito } = await this.cartId(idCart);
     let productoAnterior = carrito.productos;
 
+
+    
+
     try {
       const result = await carritoModelo.findOne({
         _id: idCart,

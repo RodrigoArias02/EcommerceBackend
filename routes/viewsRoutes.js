@@ -49,4 +49,7 @@ router.get("/mockingproducts", OthersControllers.mock)
 
 router.get("/loggerTest", OthersControllers.loggerTest)
 
+router.get("/recupero01", OthersControllers.renderEmail01)
+
+router.get("/recupero02", OthersControllers.renderEmail02)
 export default router;

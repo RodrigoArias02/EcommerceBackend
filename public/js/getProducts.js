@@ -56,21 +56,28 @@ btnEnviarId.addEventListener('click', async ()=>{
           'Content-Type': 'application/json',
       
         },
+        
       });
-  
+
+      console.log(response)
       if (!response.ok) {
+        console.log(response.status)
+        console.log(response.url)
+        if(response.status==403){
+          return window.location.href = "http://localhost:3000/ingresarProductos?error=El elemento que desea eliminar no es tuyo"
+        }
         const data = await response.json();
         alert(data.message)
-        return false;
+
       }
   
       const data = await response.json();
       console.log(data)
       if(data.status==201){
         alert("eliminado con exito")
-        const nuevosProductos= await obtenerProductos()
+       
         //emitimos el nuevo array al servidor
-        socket.emit('ProductoEliminado', nuevosProductos);
+        socket.emit('eliminado', "elementos eliminados");       
       }
     } catch (error) {
       console.error('Error:', error);
@@ -78,63 +85,17 @@ btnEnviarId.addEventListener('click', async ()=>{
     }
 })
 
-async function enviarFormulario() {
-    // Obtener datos del formulario
-    const title = document.getElementsByName('title')[0].value;
-    const description = document.getElementsByName('description')[0].value;
-    const code = document.getElementsByName('code')[0].value;
-    const price = document.getElementsByName('price')[0].value;
-    let status = document.getElementsByName('status')[0].value;
-    const stock = document.getElementsByName('stock')[0].value;
-    const category = document.getElementsByName('category')[0].value;
-    const url = document.getElementsByName('url')[0].value;
-    status = status === "true" ? true : false;
-    // Crear un objeto JSON con los datos del formulario
-    const formData = {
-      title: title,
-      description: description,
-      code: parseInt(code),
-      price: parseInt(price),
-      status: status, // Convertir a booleano
-      stock: parseInt(stock), // Convertir a número
-      category: category,
-      thumbnail: [url],
-    };
-    // Enviar datos al servidor
-    try {
-      // Enviar datos al servidor y esperar la respuesta
-      const response = await fetch('/api/products', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-       
-      });
-  
-      // Parsear la respuesta como JSON
-      const data = await response.json();
-      if(data.status=="201"){
-      // Obtener productos después de enviar el formulario
-      const productos = await obtenerProductos();
-      alert(data.message)
-      // Emitir productos al servidor
-      socket.emit('producto', productos);
-      }else{
-        alert(data.error)
-      }
-
-    } catch (error) {
-      console.error('Error al enviar el formulario:', error);
-    }
-  }
 
 //el cliente escuchara y renderizara cada vez que llegue un nuevo array
-socket.on("NuevoProducto", async datos=>{
-  renderProducts(datos)
+socket.on("productos", async datos=>{
+    renderProducts(datos)
    
 })
-socket.on("nuevoProductoEliminado", async datos=>{
+socket.on("eliminado", async datos=>{
   renderProducts(datos)
+ 
 })
+
+
+
 

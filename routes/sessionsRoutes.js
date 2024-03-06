@@ -18,4 +18,12 @@ router.get('/github', passport.authenticate('github',{}), (req,res)=>{})
 
 router.get("/logout", UsersControllers.logout);
 
+router.post("/recupero01", UsersControllers.recoverEmail)
+
+router.get("/recupero02", UsersControllers.recoverEmail02)
+
+router.post("/recupero03", UsersControllers.recoverEmail03)
+
+router.put("/premium/:uid", UsersControllers.updateRol);
+
 export default router;
