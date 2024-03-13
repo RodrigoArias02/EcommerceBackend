@@ -4,17 +4,24 @@ import { ManagerTicketMongoDB as DAO} from "../dao/classMongo/managerTicketMongo
 import { CartServices } from "./cart.service.js"
 import { ProductServices } from "./product.service.js"
 import { UserServices } from "./user.service.js"
+import mongoose from "mongoose"
 class TicketService{
     constructor(dao){
         this.dao=new dao()
     }
     async createTicketService(carritoId){
+        const idValido = mongoose.Types.ObjectId.isValid(carritoId);
+        if (!idValido) {
+          return { status: 400, error: "El id no cumple las caracteristicas de id tipo mongoDB" }
+        }
         const { productosSinStock, nuevasQuantity } = await this.checkStock(carritoId);
         let check=productosSinStock
         const {carrito} = check.length > 0 ? await this.DeleteProduct(carritoId,check): await CartServices.searchCartIdService(carritoId);
         console.log(carrito)
         let user = await UserServices.searchCartUsedService(carritoId)
-      
+        if(!user){
+            return { status: 500, error: "Ningun usuario tiene asignado ese carrito" }
+        }
         let TicketCreate= new TicketSave(carrito,user.email)
         await this.dao.create(TicketCreate)
       

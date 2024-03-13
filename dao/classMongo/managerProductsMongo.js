@@ -1,3 +1,4 @@
+import { validateProperties } from "../../utils.js";
 import ProductoModelo from "../models/product.modelo.js";
 
 export class ManagerProductsMongoDB {
@@ -7,7 +8,7 @@ export class ManagerProductsMongoDB {
       
       let prodPaginate = await ProductoModelo.paginate(
         {},
-        { lean: true, limit: 113, page: pagina }
+        { lean: true, limit: 3, page: pagina }
       );
       return {status:200, elements:prodPaginate };
     } catch (error) {
@@ -111,10 +112,20 @@ export class ManagerProductsMongoDB {
   }
   async ProductoId(id) {
     try {
+      let object
       const productoEncontrado = await ProductoModelo.findOne({
         _id: id,
       }).lean();
-      return { status: 200, producto: productoEncontrado };
+      if(productoEncontrado==null){
+        object={
+          status: 404, producto: productoEncontrado
+        }
+      }else{
+        object={
+          status: 200, producto: productoEncontrado
+        }
+      }
+      return object;
     } catch (error) {
       console.error("Algo salio mal en la busqueda:", error);
       return { status: 400, error: "Algo salio mal en la busqueda" };
@@ -122,25 +133,6 @@ export class ManagerProductsMongoDB {
   }
 
   async actualizarProducto(id, nuevasPropiedades) {
-    const propiedadesPermitidas = [
-      "title",
-      "description",
-      "code",
-      "price",
-      "status",
-      "stock",
-      "category",
-      "thumbnail",
-    ];
-    let propiedadesQueLlegan = Object.keys(nuevasPropiedades);
-    let valido = propiedadesQueLlegan.every((propiedad) =>
-      propiedadesPermitidas.includes(propiedad)
-    );
-
-    if (!valido) {
-      return { status: 400, error: "Propiedad Invalida" };
-    }
-
     try {
       // Actualizar un documento
       const result = await ProductoModelo.updateOne(

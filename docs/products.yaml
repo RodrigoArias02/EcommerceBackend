@@ -1,0 +1,398 @@
+paths:
+  /api/products/:
+    get:
+      summary: Obtiene todos los productos
+      tags:
+        - Productos
+      responses:
+        "200":
+          description: Los productos fueron obtenidos correctamente
+        "500":
+          description: Error interno en el servidor
+    post:
+      summary: Guardar Producto
+      tags:
+        - Productos
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/requestBodies/createProduct'
+      responses:
+        "200":
+          description: Producto creado con éxito
+        "400":
+          description: Error en argumentos
+        "403":
+          description: Error de autorización
+        "422":
+          description: Error al enviar los datos
+
+  /api/products/{productId}:
+    get:
+      summary: Obtiene un producto en base al id
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          description: Id producto a buscar
+          schema:
+            type: string
+            format: ObjectId
+      tags:
+        - Productos
+      responses:
+        "200":
+          description: Los producto fue obtenido OK desde la DB
+        "400":
+          description: Error de argumentos
+        "404":
+          description: Producto no encontrado
+        "500":
+          description: Error interno
+    put:
+      summary: Actualizar producto
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          description: Id producto a buscar
+          schema:
+            type: string
+            format: ObjectId
+      tags:
+        - Productos
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/requestBodiesUpdate/updateProduct'
+      responses:
+        "200":
+          description: Producto creado con éxito
+        "400":
+          description: Error en argumentos
+        "403":
+          description: Error de autorización
+        "422":
+          description: Error al enviar los datos
+    delete:
+      summary: Eliminar un producto
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          description: Id producto a buscar
+          schema:
+            type: string
+            format: ObjectId
+      tags:
+        - Productos
+      responses:
+        "201":
+          description: Producto eliminado con exito
+        "400":
+          description: Error de argumentos
+        "403":
+          description: Permisos insuficientes
+        "404":
+          description: Producto no encontrado
+        "500":
+          description: Error interno
+  /api/carts/:
+    get:
+      summary: Obtiene todos los carritos
+      tags:
+        - Carritos
+      responses:
+        "200":
+          description: Los carritos fueron obtenidos correctamente
+        "404":
+          description: No se encontraron carritos
+        "500":
+          description: Error interno en el servidor
+    post:
+      summary: Crear carrito
+      tags:
+        - Carritos
+      responses:
+        "201":
+          description: Carrito creado con exito
+        "400":
+          description: No se encontraron carritos
+        "500":
+          description: Error interno en el servidor
+  /api/carts/{cartId}:
+    get:
+      summary: Obtiene tu carrito en base al id
+      parameters:
+        - name: cartId
+          in: path
+          required: true
+          description: Id carrito a buscar
+          schema:
+            type: string
+            format: ObjectId
+      tags:
+        - Carritos
+      responses:
+        "200":
+          description: El carrito fue encontrado
+        "400":
+          description: Error de argumentos
+        "404":
+          description: Producto no encontrado
+        "500":
+          description: Error interno
+    put:
+      summary: Actualice los productos de su carrito
+      parameters:
+        - name: cartId
+          in: path
+          required: true
+          description: Ingrese id de su carrito
+          schema:
+            type: string
+            format: ObjectId
+      tags:
+        - Carritos
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/requestBodiesUpdateProductsToCart/updateProducts'
+      responses:
+        "200":
+          description: El carrito fue encontrado
+        "400":
+          description: Error de argumentos
+        "404":
+          description: No se encontró el documento o no hubo cambios
+        "500":
+          description: Error interno
+    delete:
+      summary: Eliminar TODOS los productos del carrito
+      parameters:
+        - name: cartId
+          in: path
+          required: true
+          description: Ingrese id de su carrito
+          schema:
+            type: string
+            format: ObjectId
+      tags:
+        - Carritos
+      responses:
+        "200":
+          description: Producto eliminado con exito
+        "400":
+          description: Error de argumentos
+        "404":
+          description: No se encontró el documento o no hubo cambios
+        "500":
+          description: Error interno
+
+  /api/carts/{cartId}/product/{productId}:
+    post:
+      summary: Añade un producto a tu carrito
+      parameters:
+        - name: cartId
+          in: path
+          required: true
+          description: Ingrese id de su carrito
+          schema:
+            type: string
+            format: ObjectId
+        - name: productId
+          in: path
+          required: true
+          description: Ingrese id del producto 
+          schema:
+            type: string
+            format: ObjectId
+      tags:
+        - Carritos
+      responses:
+        "200":
+          description: El carrito fue encontrado
+        "400":
+          description: Error de argumentos
+        "404":
+          description: Producto no encontrado
+        "500":
+          description: Error interno
+    put:
+      summary: Actualiza la quantity de uno de los productos de tu carrito
+      parameters:
+        - name: cartId
+          in: path
+          required: true
+          description: Ingrese id de su carrito
+          schema:
+            type: string
+            format: ObjectId
+        - name: productId
+          in: path
+          required: true
+          description: Ingrese id del producto 
+          schema:
+            type: string
+            format: ObjectId
+      tags:
+        - Carritos
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/requestBodiesUpdateQuantity/updateQuantity'
+      responses:
+        "200":
+          description: El carrito fue encontrado
+        "400":
+          description: Error de argumentos
+        "404":
+          description: Producto no encontrado
+        "500":
+          description: Error interno
+    delete:
+      summary: Eliminar un producto del carrito
+      parameters:
+        - name: cartId
+          in: path
+          required: true
+          description: Ingrese id de su carrito
+          schema:
+            type: string
+            format: ObjectId
+        - name: productId
+          in: path
+          required: true
+          description: Ingrese id del producto 
+          schema:
+            type: string
+            format: ObjectId
+      tags:
+        - Carritos
+      responses:
+        "200":
+          description: Producto eliminado con exito
+        "400":
+          description: Error de argumentos
+        "404":
+          description: No se encontró el documento o no hubo cambios
+        "500":
+          description: Error interno
+  /api/carts/{cartId}/purchase:
+    get:
+      summary: Obtiene el ticket de tu carrito
+      parameters:
+        - name: cartId
+          in: path
+          required: true
+          description: Id carrito a buscar
+          schema:
+            type: string
+            format: ObjectId
+      tags:
+        - Carritos
+      responses:
+        "200":
+          description: El carrito fue encontrado
+        "400":
+          description: Error de argumentos
+        "404":
+          description: Producto no encontrado
+        "500":
+          description: Error interno
+
+components:
+  schemas:
+  requestBodies:
+    createProduct:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        code:
+          type: integer
+        price:
+          type: integer
+        owner:
+          type: string
+        status:
+          type: boolean
+        stock:
+          type: integer
+        category:
+          type: string
+        thumbnail:
+          type: string
+      example:
+        title: "Televisor"
+        description: "Televisor plasma 43 pulgadas"
+        code: 2
+        price: 1000
+        owner: "Rodrigo@gmail.com"
+        status: true
+        stock: 10
+        category: "electronica"
+        thumbnail:  "https://www.google.com/url?sa=i&url=https%3A%2F%2Flistado.mercadolibre.com.ar%2Fsmart-tv-samsung-43&psig=AOvVaw2fd69zh-YXQkEvVASUaFt3&ust=1710457623129000&source=images&cd=vfe&opi=89978449&ved=0CBMQjRxqFwoTCODWiqmt8oQDFQAAAAAdAAAAABAF"
+
+  requestBodiesUpdate:
+    updateProduct:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        code:
+          type: integer
+        price:
+          type: integer
+        owner:
+          type: string
+        status:
+          type: boolean
+        stock:
+          type: integer
+        category:
+          type: string
+      example:
+        title: "Silla gamer"
+        description: "Silla gamer verde"
+        code: 5
+        price: 1000
+        owner: "RodrigoPremium@gmail.com"
+        status: true
+        stock: 10
+        category: "hogar"
+
+  requestBodiesUpdateQuantity:
+    updateQuantity:
+      type: object
+      properties:
+        quantity:
+          type: integer
+      example:
+        quantity: 5
+
+  requestBodiesUpdateProductsToCart:
+    updateProducts:
+      type: object
+      properties:
+        newIdProduct:
+          type: string
+          format: objectId  # Esto es opcional, dependiendo de cómo quieras definir el formato del ID
+        newQuantity:
+          type: integer
+      example:
+        newIdProduct: "65e7ad87fcbee938777ec80f"  # Aquí colocarías un ID de objeto MongoDB específico
+        newQuantity: 10
+        

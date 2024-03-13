@@ -9,8 +9,8 @@ const router = express();
 
 const auth=(req,res,next)=>{
   if(!req.session.usuario){
-    res.redirect("/login?error=Su sesion expiro, ingrese nuevamente")
-    return
+   
+    return res.redirect("/login?error=Su sesion expiro, ingrese nuevamente")
   }
   next()
 }

@@ -75,8 +75,8 @@ export const initializarPassport = () => {
         usernameField: "email",
       },
       async (username, password, done) => {
+        console.log("passport")
         try {
-          // let {email, password}=req.body
           if (!username || !password) {
             // return res.redirect('/login?error=Complete todos los datos')
             return done(null, false);
@@ -92,7 +92,12 @@ export const initializarPassport = () => {
           }
 
           delete usuario.password;
+          if(usuario){
           return done(null, usuario);
+
+          }else{
+            return done(null, false);
+          }
           // previo a devolver un usuario con done, passport graba en la req, una propiedad
           // user, con los datos del usuario. Luego podré hacer req.user
         } catch (error) {
@@ -129,13 +134,18 @@ export const initializarPassport = () => {
 
   //configurar serializador y deserializador
   passport.serializeUser((usuario, done) => {
+    console.log("serializador")
+    if(usuario.email){
     return done(null, usuario.email); // Utiliza el correo electrónico como identificador único
+    }
   });
 
   passport.deserializeUser(async (email, done) => {
     try {
+      console.log("deserializador")
+      if(email){
       const usuario= await UserServices.getByEmail(email)
-      return done(null, usuario);
+      return done(null, usuario);}
     } catch (error) {
       done(error);
     }

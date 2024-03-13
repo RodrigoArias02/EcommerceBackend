@@ -11,6 +11,8 @@ import { initializarPassport } from "./config/config.passport.js";
 import passport from "passport";
 import { configVar } from "./config/config.js";
 import { middlog } from "./utils/loggers.js";
+import swaggerJSDoc from "swagger-jsdoc";
+import SwaggerUi from "swagger-ui-express";
 // import ProductManager from './functions/functionProducts.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -20,8 +22,21 @@ const __dirname = dirname(__filename);
 
 const app = express();
 const PORT = configVar.PORT;
+const options={
+  definition:{
+    openapi:"3.0.0",
+    info:{
+      title:"API Abm Usuarios",
+      version:"1.0.0",
+      description:"Documentacion API abm users"
+    }
+  },
+  apis:["./docs/*yaml"]
+}
 
+const specs=swaggerJSDoc(options)
 // Configuración del motor de vistas
+
 app.engine(
   "handlebars",
   engine({
@@ -50,12 +65,14 @@ app.set("views", join(__dirname, "views"));
 
 // Middleware
 app.use(middlog)
+app.use("/api-docs", SwaggerUi.serve, SwaggerUi.setup(specs))
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(join(__dirname, "./public")));
 initializarPassport()
 app.use(passport.initialize())
 app.use(passport.session())
+
 
 // Rutas
 import routerProducts from "./routes/productsRoutes.js";
@@ -65,6 +82,7 @@ import routerChat from "./routes/chatRoutes.js";
 import routerSessions from "./routes/sessionsRoutes.js";
 import { config } from "dotenv";
 import { ErrorSearchRouter, errorHandler, errorLoggers } from "./middlewares/errorHandler.js";
+import { Console } from "console";
 
 
 app.use("/api/products", routerProducts);

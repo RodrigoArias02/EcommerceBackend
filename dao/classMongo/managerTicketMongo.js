@@ -5,8 +5,10 @@ export class ManagerTicketMongoDB {
             let nuevoTicket = TicketModelo.create(ticket);
             return nuevoTicket
         } catch (error) {
-            console.error("Error al listar productos:", error);
-            return null
+            return {
+                status: 500,
+                error: `Error al actualizar el documento: ${error}`,
+              };
         }
     }
 

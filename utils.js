@@ -45,7 +45,7 @@ export function generateUniqueCode() {
 }
 
 export function validateProperties(product){
-    console.log(product)
+  
     const propiedadesPermitidas = [
         "title",
         "description",

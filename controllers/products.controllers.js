@@ -116,7 +116,7 @@ export class ProductsControllers {
     const login = req.session.usuario ? true : false;
     const usuario = req.session.usuario;
     const esUsuario = usuario.rol === "usuario" ? true : false;
-
+    
     if (req.query.pagina) {
       pagina = req.query.pagina;
     }
@@ -190,13 +190,12 @@ export class ProductsControllers {
     res.setHeader("Content-Type", "application/json");
     try {
       const idValido = mongoose.Types.ObjectId.isValid(productId);
-      console.log(idValido);
       if (!idValido) {
         throw CustomError.createError(
           "Error en el id",
           "El id no cumple las caracteristicas de id tipo mongoDB",
-          STATUS_CODES.ERROR_PETICION,
-          ERRORES_INTERNOS.OTROS,
+          STATUS_CODES.ERROR_ARGUMENTOS, 
+          ERRORES_INTERNOS.ARGUMENTOS,
           errorId(idValido, productId)
         );
       }
@@ -204,11 +203,10 @@ export class ProductsControllers {
       const { status, producto } = await ProductServices.ProductoIdService(
         productId
       );
-
-      if (status != "200") {
+      if (status == "200") {
         return res.status(200).json({ producto });
       } else {
-        return res.status(400).json({ error: "Producto no encontrado" });
+        return res.status(404).json({ error: "Producto no encontrado" });
       }
     } catch (error) {
       next(error);
@@ -220,20 +218,21 @@ export class ProductsControllers {
       res.setHeader("Content-Type", "application/json");
       let usuario=req.session.usuario
       let product = req.body;
-      console.log(product);
+
       const valido = validateProperties(product);
-      console.log(valido);
+
       if (!valido) {
         throw CustomError.createError(
           "Error en propiedades",
           "Propiedades inválidas",
-          STATUS_CODES.ERROR_ARGUMENTOS, // Cambiar statusCode a 400
+          STATUS_CODES.ERROR_ARGUMENTOS, 
           ERRORES_INTERNOS.ARGUMENTOS,
           errorArgumentos(valido, req.body)
         );
       }
       product = new ProductRead(product);
       const OK = validTypeData(product);
+
       if (OK != null) {
         throw CustomError.createError(
           "Error en tipo de datos",
@@ -243,7 +242,7 @@ export class ProductsControllers {
           errorTipoValores(OK)
         );
       }
-      console.log(usuario.rol)
+
       if(usuario.rol != "premium" && usuario.rol != "admin"){
         return res.status(403).json({error: "Permisos insuficientes para subir un producto."})
     }
@@ -271,6 +270,7 @@ export class ProductsControllers {
   static async putUpdateProduct(req, res, next) {
     res.setHeader("Content-Type", "application/json");
     let { pid } = req.params;
+    let product=req.body
     try {
       const idValido = mongoose.Types.ObjectId.isValid(pid);
       if (!idValido) {
@@ -282,9 +282,19 @@ export class ProductsControllers {
           errorId(idValido, pid)
         );
       }
+      const valido = validateProperties(product);
+      if (!valido) {
+        throw CustomError.createError(
+          "Error en propiedades",
+          "Propiedades inválidas",
+          STATUS_CODES.ERROR_ARGUMENTOS, 
+          ERRORES_INTERNOS.ARGUMENTOS,
+          errorArgumentos(valido, req.body)
+        );
+      }
       const estado = await ProductServices.actualizarProductoService(
         pid,
-        req.body
+        product
       );
       if (estado == true) {
         return res.status(200).json({ estado });
@@ -301,7 +311,7 @@ export class ProductsControllers {
       res.setHeader("Content-Type", "application/json");
       const usuario = req.session.usuario;
       let { pid } = req.params;
-      console.log(pid)
+     
       const idValido = mongoose.Types.ObjectId.isValid(pid);
       if (!idValido) {
         throw CustomError.createError(
@@ -313,6 +323,9 @@ export class ProductsControllers {
         );
       }
       const { producto } = await ProductServices.ProductoIdService(pid);
+      if (usuario.rol=="usuario") {
+        return res.status(403).json({status:403,error:"permisos insuficientes", ruta:configVar.URL} );   
+      }
         if (usuario.rol=="premium" && producto.owner != usuario.email) {
           return res.status(403).json({status:403,error:"permisos insuficientes", ruta:configVar.URL} );   
         }
@@ -328,3 +341,6 @@ export class ProductsControllers {
     }
   }
 }
+
+
+

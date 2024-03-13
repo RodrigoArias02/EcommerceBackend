@@ -7,99 +7,68 @@ export class ManagerCartMongoDB {
       return carritos;
     } catch (error) {
       console.error("Error al listar productos:", error);
-      return null;
+      return { status: 500, error: "Error al buscar carritos" };
     }
   }
 
   async createCart() {
     try {
       let nuevoCarrito = await carritoModelo.create({});
-      console.log("creado con exito");
-      return {
-        status: 201,
-        message: "peticion realizada con exito",
-        producto: nuevoCarrito,
-      };
+      return nuevoCarrito
     } catch (error) {
       console.error("Error al añadir el producto:", error);
-      return { status: 400, error: "Error al añadir el producto a la BD" };
+      return { status: 500, error: "Error al añadir el producto a la BD" };
     }
   }
 
   async cartId(id) {
     try {
-      if(id==null || id==undefined){
-        console.log("id invalido")
-        return { status: 404, error: "Carrito no encontrado" };
-      }
     const cartSearch = await carritoModelo.findOne({ _id: id }).populate("productos.idProducto");
-    if (!cartSearch) {
-      // El carrito no fue encontrado
-      console.log("carrito no encontrado")
-      return { status: 404, error: "Carrito no encontrado" };
-    }
-  
-    return { status: 200, carrito: cartSearch };
+    return cartSearch
     } catch (error) {
       console.error("Algo salio mal en la busqueda:", error);
-      return { status: 400, error: "Algo salio mal en la busqueda" };
+      return { status: 500, error: "Algo salio mal en la busqueda" };
     }
   }
 
   async addProductToCart(idCart, nuevasPropiedades) {
-    const propiedadesPermitidas = ["idProducto", "quantity"];
-    let propiedadesQueLlegan = Object.keys(nuevasPropiedades);
-    let valido = propiedadesQueLlegan.every((propiedad) =>
-      propiedadesPermitidas.includes(propiedad)
-    );
-    if (!valido) {
-      return { status: 400, error: "Propiedad Invalida" };
-    }
-    let { carrito } = await this.cartId(idCart);
-    let productoAnterior = carrito.productos;
-
-
-    
 
     try {
-      const result = await carritoModelo.findOne({
-        _id: idCart,
-        productos: { $elemMatch: { idProducto: nuevasPropiedades.idProducto } },
-      });
+      let carrito = await this.cartId(idCart);
+      let productosNuevos = carrito.productos;
+        let result = await carritoModelo.findOne({
+          _id: idCart,
+          productos: { $elemMatch: { idProducto: nuevasPropiedades.idProducto } },
+        });
+  
+        //si encuentra producto
+        if (result) {
+          const indice = result.productos.findIndex(objeto => objeto.idProducto.toString() === nuevasPropiedades.idProducto.toString());
 
-      if (result) {
-        return {
-          status: 404,
-          error: "el producto ya esta ingresado en el carrito",
-        };
-      }
-    } catch (error) {
-      console.error("Error al buscar el documento:", error);
-    }
+          // Si el id se repite, aumentar quantity
+          if (indice !== -1) {
+            result.productos[indice].quantity++;
+          }
+        
+          productosNuevos=result.productos
+          console.log("Producot ya ingresado, se agrego +1")
+        }else{
+          //Si el array productos tiene mas longitud a 0 le agregamos el nuevo producto, sino le redefinimos las nuevas
+          if (carrito.productos.length > 0) {
+            productosNuevos.push(nuevasPropiedades);
+          } else {
+            productosNuevos = nuevasPropiedades;
+          }
+        }
 
-    if (carrito.productos.length > 0) {
-      productoAnterior.push(nuevasPropiedades);
-    } else {
-      productoAnterior = nuevasPropiedades;
-    }
-    try {
-      const result = await carritoModelo.updateOne(
+      result = await carritoModelo.updateOne(
         { _id: idCart },
-        { productos: productoAnterior }
+        { productos: productosNuevos }
       );
-      //   Verificar si se actualizó correctamente
-      if (result.modifiedCount === 1) {
-        console.log("Documento actualizado con éxito");
-        return { status: 200, message: "Documento actualizado con éxito" };
-      } else {
-        console.log("No se encontró el documento o no hubo cambios");
-        return {
-          status: 404,
-          error: "No se encontró el documento o no hubo cambios",
-        };
-      }
+
+      return result
     } catch (error) {
-      console.error("Error al actualizar el documento:", error);
+      console.error("Errror al actualizar el documento:", error);
       return {
         status: 500,
         error: `Error al actualizar el documento: ${error}`,
@@ -109,20 +78,11 @@ export class ManagerCartMongoDB {
 
   async updateQuantity(idCart, idProduct, quantity) {
     try {
-      // Actualizamos el carrito usando $pull
-
       const quantityUpdateResult = await carritoModelo.updateOne(
         { _id: idCart, "productos.idProducto": idProduct },
         { $set: { "productos.$.quantity": quantity.quantity } }
       );
-      if (quantityUpdateResult.modifiedCount === 1) {
-        return { status: 200, message: "Cantidad actualizada con éxito" };
-      } else {
-        return {
-          status: 404,
-          error: "No se encontró el documento o no hubo cambios",
-        };
-      }
+      return quantityUpdateResult
     } catch (error) {
       return { status: 500, error: `Hubo un error: ${error}` };
     }
@@ -134,16 +94,7 @@ export class ManagerCartMongoDB {
         { _id: cartId },
         { $set: { productos: arrayProducts } }
       );
-      if (updateResult.modifiedCount === 1) {
-        
-        return { status: 200, message: "Productos actualizada con éxito" };
-      } else {
-      
-        return {
-          status: 404,
-          error: "No se encontró el documento o no hubo cambios",
-        };
-      }
+      return updateResult
     } catch (error) {
       return { status: 500, error: `Hubo un error: ${error}` };
     }
@@ -156,14 +107,7 @@ export class ManagerCartMongoDB {
         { _id: idCarrito },
         { $pull: { productos: { idProducto: idProductoAEliminar } } }
       );
-      if (deleteResult.modifiedCount === 1) {
-        return { status: 200, message: "Producto eliminado con exito" };
-      } else {
-        return {
-          status: 404,
-          error: "No se encontró el documento o no hubo cambios",
-        };
-      }
+      return deleteResult
     } catch (error) {
       return { status: 500, error: `Hubo un error: ${error}` };
     }
@@ -175,19 +119,10 @@ export class ManagerCartMongoDB {
         { _id: id },
         { productos: [] }
       );
-      //   Verificar si se actualizó correctamente
-      if (result.modifiedCount === 1) {
-        return {
-          status: 200,
-          message: "Se eliminaron los productos del carrito",
-        };
-      } else {
-        return {
-          status: 404,
-          error: "No se encontró el documento o no hubo cambios",
-        };
-      }
-    } catch (error) {}
+      return result
+    } catch (error) {
+      return { status: 500, error: `Hubo un error: ${error}` };
+    }
   }
 
   async deleteCart(id) {

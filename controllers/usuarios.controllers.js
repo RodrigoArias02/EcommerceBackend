@@ -19,21 +19,25 @@ export class UsersControllers {
     res.setHeader("Content-Type", "text/html");
     const login = req.session.usuario ? true : false;
     const { error } = req.query;
-
+  
     res.status(200).render("register", { error, login });
   }
 
   //autenticacion normal
   static async authenticateUser(req, res) {
     res.setHeader("Content-Type", "application/json");
-
     let user = req.user;
-
     user = new UserRead(user);
-
+   
     req.session.usuario = user;
 
-    res.redirect("/productos");
+    if (req.session.usuario) {
+      res.redirect("/productos");
+    } else {
+      return res
+        .status(401)
+        .json({ error: "No se consiguio iniciar la session" });
+    }
   }
   //autenticacion github
   static async authenticateUserGithub(req, res) {
@@ -44,14 +48,21 @@ export class UsersControllers {
     user = new UserRead(user);
 
     req.session.usuario = user;
-
-    res.redirect("/productos");
+   
+    if (req.session.usuario) {
+      res.redirect("/productos");
+    } else {
+      return res
+        .status(401)
+        .json({ error: "No se consiguio iniciar la session" });
+    }
   }
 
   //autenticacion de registro
   static async authenticateRegisterUser(req, res) {
     res.setHeader("Content-Type", "application/json");
     const { email } = req.body;
+  
     res.redirect(`/login?user=${email}`);
   }
 
@@ -106,7 +117,7 @@ export class UsersControllers {
         .json({ error: "Ha ocurrido un error en el servidor" });
     }
   }
-  
+
   static async recoverEmail03(req, res) {
     try {
       let { secondPassword, token } = req.body;
@@ -115,30 +126,42 @@ export class UsersControllers {
       let usuario = await UserServices.getByEmail(email);
 
       if (!usuario) {
-        return res.redirect( `${configVar.URL} /recupero01?error=No se encontro el usuario` );
+        return res.redirect(
+          `${configVar.URL} /recupero01?error=No se encontro el usuario`
+        );
       }
       let passwordHash = crearHash(secondPassword);
 
       if (validPassword(usuario, secondPassword)) {
-        return res.redirect(`${configVar.URL}/recupero02?error=La contraseña ingresada ya esta vigente, elija otra&token=${token}`);
+        return res.redirect(
+          `${configVar.URL}/recupero02?error=La contraseña ingresada ya esta vigente, elija otra&token=${token}`
+        );
       }
       let usuarioActualizado = { ...usuario, password: passwordHash };
 
-      let respuesta = await UserServices.updateUserService(email,usuarioActualizado);
+      let respuesta = await UserServices.updateUserService(
+        email,
+        usuarioActualizado
+      );
 
       if (respuesta.status != 200) {
-        return res.redirect(`${configVar.URL}/recupero01?error=${respuesta.error}` );
+        return res.redirect(
+          `${configVar.URL}/recupero01?error=${respuesta.error}`
+        );
       }
 
-      return res.redirect(`${configVar.URL}/recupero01?message=Contraseña reseteada...!!!`);
-
+      return res.redirect(
+        `${configVar.URL}/recupero01?message=Contraseña reseteada...!!!`
+      );
     } catch (error) {
       if (error.expiredAt) {
         return res.redirect(
           `${configVar.URL}/recupero01?error=El token ha expirado: ${error.expiredAt}`
         );
       } else {
-        return res.status(500).json({ error: "ha ocurrido un error en el servidor" });
+        return res
+          .status(500)
+          .json({ error: "ha ocurrido un error en el servidor" });
       }
     }
   }
@@ -146,28 +169,29 @@ export class UsersControllers {
     try {
       res.setHeader("Content-Type", "application/json");
       const uid = req.params.uid;
-      let rol
-      console.log(uid)
-      let usuario=await UserServices.searchUserIdService(uid)
+      let rol;
+    
+      let usuario = await UserServices.searchUserIdService(uid);
 
-
-      if(usuario.rol=="usuario"){
-        rol="premium"
-      }else if(usuario.rol=="premium"){
-        rol="usuario"
-      }else{
-        return res.status(404).json({error:"el rol de este usuario no se puede cambiar."})
+      if (usuario.rol == "usuario") {
+        rol = "premium";
+      } else if (usuario.rol == "premium") {
+        rol = "usuario";
+      } else {
+        return res
+          .status(404)
+          .json({ error: "el rol de este usuario no se puede cambiar." });
       }
-      let usuarioModificado={
+      let usuarioModificado = {
         ...usuario,
-        rol
-      }
-      let respuesta= await UserServices.updateUserService(usuario.email,usuarioModificado)
-      return res.status(201).json({respuesta})
-    } catch (error) {
-      
-    }
-
+        rol,
+      };
+      let respuesta = await UserServices.updateUserService(
+        usuario.email,
+        usuarioModificado
+      );
+      return res.status(201).json({ respuesta });
+    } catch (error) {}
   }
   //errores
   static async errorLogin(req, res) {

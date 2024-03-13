@@ -28,18 +28,21 @@ export class CartsControllers {
   static async loadCarts(req, res) {
     res.setHeader("Content-Type", "application/json");
     const carritos = await CartServices.listCartService();
-    return res.status(201).json({ carritos });
+    if(carritos.status){
+      return res.status(carritos.status).json( carritos );
+    }
+    return res.status(200).json({ carritos });
   }
 
   static async postCreateCart(req, res) {
     res.setHeader("Content-Type", "application/json");
 
     // const validacion = cartManager.CreateCart();
-    const validacion = CartServices.createCartService();
-    if (validacion) {
+    const validacion = await CartServices.createCartService();
+    if (validacion.status==201) {
       return res.status(201).json("Carrito creado con exito");
     } else {
-      return res.status(400).json("No se pudo crear el carrito");
+      return res.status(validacion.status).json(validacion.error);
     }
   }
 
@@ -47,14 +50,12 @@ export class CartsControllers {
     const productId = req.params.cid; // Obtén el id del producto de req.params
     res.setHeader("Content-Type", "application/json");
 
-    const { status, carrito } = await CartServices.searchCartIdService(productId);
-    if (status == 200) {
+    const carrito = await CartServices.searchCartIdService(productId);
+    if (carrito.status == 200) {
       return res.status(200).json({ carrito });
-    } else if (status == 400) {
-      return res.status(400).json({ error: "No se encontro el id" });
     } else {
-      return res.status(500).json({ error: "Hubo un error" });
-    }
+      return res.status(carrito.status).json(carrito.error);
+    } 
   }
 
   static async postAddProductToCart(req, res) {
@@ -163,7 +164,7 @@ export class CartsControllers {
     const cartId = req.params.cid; // Obtén el id del producto de req.params
   
     const deletProducts = await CartServices.deleteTotalProductCartService(cartId);
-    return res.status(200).json(deletProducts);
+    return res.status(deletProducts.status).json(deletProducts);
   }
 
   static async deleteOneProduct(req, res) {
@@ -172,6 +173,9 @@ export class CartsControllers {
     const productId = req.params.pid; // Obtén el id del producto de req.params
   
     const deletProducts = await CartServices.deleteProductCartService(cartId, productId);
+    if(deletProducts.status){
+      return res.status(deletProducts.status).json(deletProducts);
+    }
     return res.status(200).json(deletProducts);
   }
 
@@ -180,7 +184,9 @@ export class CartsControllers {
     const cartId = req.params.cid; // Obtén el id del producto de req.params
 
     let ticket= await TicketServices.createTicketService(cartId)
-    console.log(ticket)
+    if(ticket.status){
+      return res.status(ticket.status).json(ticket);
+    }
     return res.status(200).json({ticket});
   }
 }
