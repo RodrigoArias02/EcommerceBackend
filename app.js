@@ -80,9 +80,7 @@ import routerCart from "./routes/cartRoutes.js";
 import routerViews from "./routes/viewsRoutes.js";
 import routerChat from "./routes/chatRoutes.js";
 import routerSessions from "./routes/sessionsRoutes.js";
-import { config } from "dotenv";
 import { ErrorSearchRouter, errorHandler, errorLoggers } from "./middlewares/errorHandler.js";
-import { Console } from "console";
 
 
 app.use("/api/products", routerProducts);

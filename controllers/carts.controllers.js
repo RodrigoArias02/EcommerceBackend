@@ -47,12 +47,12 @@ export class CartsControllers {
   }
 
   static async GetCartId(req, res) {
-    const productId = req.params.cid; // Obtén el id del producto de req.params
+    const cartId = req.params.cid; // Obtén el id del producto de req.params
     res.setHeader("Content-Type", "application/json");
 
-    const carrito = await CartServices.searchCartIdService(productId);
+    const carrito = await CartServices.searchCartIdService(cartId);
     if (carrito.status == 200) {
-      return res.status(200).json({ carrito });
+      return res.status(200).json(carrito);
     } else {
       return res.status(carrito.status).json(carrito.error);
     } 
@@ -64,6 +64,9 @@ export class CartsControllers {
     const productId = req.params.pid; // Obtén el id del producto de req.params
     const cartId = req.params.cid; // Obtén el id del producto de req.params
     const idValido = mongoose.Types.ObjectId.isValid(cartId);
+    if (!req.isAuthenticated()) {
+      return res.status(403).json({ error: "Inicie sesión" });
+  }
     if (!idValido) {
       return res
         .status(400)
@@ -73,7 +76,7 @@ export class CartsControllers {
     }
     const validacion = await ProductServices.ProductoIdService(productId);
     if (validacion.status != 200) {
-      return res.status(400).json(validacion.error);
+      return res.status(validacion.status).json(validacion.error);
     }
     if(validacion.producto.owner==usuario.email){
       return res.status(400).json({error:"No puedes añadir a tu carrito un producto que tu creaste...!!!"});

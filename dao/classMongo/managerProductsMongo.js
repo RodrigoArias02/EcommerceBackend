@@ -99,12 +99,7 @@ export class ManagerProductsMongoDB {
         };
       }
       let nuevoProducto = ProductoModelo.create(product);
-      console.log("creado con exito");
-      return {
-        status: 201,
-        message: "peticion realizada con exito",
-        producto: nuevoProducto,
-      };
+      return nuevoProducto
     } catch (error) {
       console.error("Error al añadir el producto:", error);
       return { status: 400, messageError: "Error al añadir el producto a la BD",error:error };

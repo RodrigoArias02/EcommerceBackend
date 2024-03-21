@@ -11,7 +11,12 @@ class ProductService {
     return await this.dao.listProductsAggregate(category, page, direccion);
   }
   async ingresarProductosService(product) {
-    return await this.dao.ingresarProductos(product);
+    let nuevoProducto = await this.dao.ingresarProductos(product);
+    return {
+      status: 201,
+      message: "peticion realizada con exito",
+      producto: nuevoProducto,
+    };
   }
 
   async listProductsAggregateService(category, page, direccion) {

@@ -54,3 +54,11 @@ export const errorPeticion=(object)=>{
         -${object.messageError}
     `
 }
+
+export const errrorPermisos=(usuario)=>{
+    return `
+    Error en permisos:
+    Validacion en valores:
+        - validacion: esperado admin o premium, recibido ${JSON.stringify(usuario)}
+    `
+}

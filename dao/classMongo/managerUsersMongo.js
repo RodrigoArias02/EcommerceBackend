@@ -64,4 +64,18 @@ export class ManagerUsersMongoDB {
       return null;
     }
   }
+
+  async deleteUser(email) {
+    try {
+      const result = await UserModelo.deleteOne({email});
+
+      return result
+    } catch (error) {
+      console.error("Error al eliminar el usuario:", error);
+      return {
+        status: 500,
+        message: "Error interno al intentar eliminar el usuario.",
+      };
+    }
+  }
 }

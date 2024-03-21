@@ -19,24 +19,20 @@ export class UsersControllers {
     res.setHeader("Content-Type", "text/html");
     const login = req.session.usuario ? true : false;
     const { error } = req.query;
-  
+
     res.status(200).render("register", { error, login });
   }
 
   //autenticacion normal
   static async authenticateUser(req, res) {
     res.setHeader("Content-Type", "application/json");
-    let user = req.user;
-    user = new UserRead(user);
-   
-    req.session.usuario = user;
-
-    if (req.session.usuario) {
-      res.redirect("/productos");
+    if (req.isAuthenticated()) {
+      let user = new UserRead(req.user);
+      req.session.usuario = user;
+      // return res.redirect("/productos"); //produccion
+      return res.status(200).json({ message: "Autenticación exitosa", user }); //test
     } else {
-      return res
-        .status(401)
-        .json({ error: "No se consiguio iniciar la session" });
+      return res.status(401).json({ error: "No se pudo autenticar el usuario" });
     }
   }
   //autenticacion github
@@ -48,7 +44,7 @@ export class UsersControllers {
     user = new UserRead(user);
 
     req.session.usuario = user;
-   
+
     if (req.session.usuario) {
       res.redirect("/productos");
     } else {
@@ -62,8 +58,9 @@ export class UsersControllers {
   static async authenticateRegisterUser(req, res) {
     res.setHeader("Content-Type", "application/json");
     const { email } = req.body;
-  
-    res.redirect(`/login?user=${email}`);
+
+
+    return res.redirect(`/login?user=${email}`);
   }
 
   //logout
@@ -170,7 +167,7 @@ export class UsersControllers {
       res.setHeader("Content-Type", "application/json");
       const uid = req.params.uid;
       let rol;
-    
+
       let usuario = await UserServices.searchUserIdService(uid);
 
       if (usuario.rol == "usuario") {

@@ -9,6 +9,7 @@ import {
   errorId,
   errorPeticion,
   errorTipoValores,
+  errrorPermisos,
 } from "../utils/errors.js";
 import { CustomError } from "../utils/customErrors.js";
 import { io } from "../app.js";
@@ -217,7 +218,16 @@ export class ProductsControllers {
     try {
       res.setHeader("Content-Type", "application/json");
       let usuario=req.session.usuario
-      let product = req.body;
+      let product=req.body
+      if (!req.isAuthenticated()) {
+        throw CustomError.createError(
+          "Usuario no encontrado",
+          "No se ha iniciado sesión. Debes iniciar sesión para realizar esta acción.",
+          STATUS_CODES.ERROR_AUTORIZACION,
+          ERRORES_INTERNOS.ERROR_AUTORIZACION,
+          errrorPermisos(usuario)
+      );
+    }
 
       const valido = validateProperties(product);
 
@@ -243,11 +253,15 @@ export class ProductsControllers {
         );
       }
 
-      if(usuario.rol != "premium" && usuario.rol != "admin"){
-        return res.status(403).json({error: "Permisos insuficientes para subir un producto."})
+      if(usuario.rol !== "premium" && usuario.rol !== "admin"){
+        throw CustomError.createError(
+            "Permisos insuficientes",
+            "No tienes permisos suficientes para subir un producto.",
+            STATUS_CODES.ERROR_AUTORIZACION,
+            ERRORES_INTERNOS.ERROR_AUTORIZACION,
+            errrorPermisos(usuario.rol)
+        );
     }
-    
-      
       const estado = await ProductServices.ingresarProductosService(product);
 
       if (estado.status != 201) {
@@ -259,7 +273,8 @@ export class ProductsControllers {
           errorPeticion(estado)
         );
       }
-      return res.redirect(`${configVar.URL}/ingresarProductos`);
+
+      return res.redirect(`${configVar.URL}/ingresarProductos`); //produccion
     } catch (error) {
       // Pasar el error al siguiente middleware (errorHandler)
       next(error);

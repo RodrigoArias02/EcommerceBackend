@@ -9,7 +9,7 @@ export const errorHandler = (error, req, res, next) => {
       return res.status(error.codigo).json({ error: `${error.name}: ${error.message}` });
     } else {
       console.error("Error inesperado:", error);
-      return res.status(500).json({error:"Error inesperado en el servidor - Intente más tarde, o contacte a su administrador"});
+      return res.status(500).json({errorr:"Errorr inesperado en el servidor - Intente más tarde, o contacte a su administrador", msgError:error});
     }
   }
   next();

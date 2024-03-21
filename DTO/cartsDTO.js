@@ -15,13 +15,13 @@ export class RenderCart {
 
 export class CartAmount {
   constructor(cart) {
-    this.precioss = [];
+    this.precios = [];
 
     cart.productos.forEach((element) => {
       if (element && element.idProducto && element.idProducto.price && element && element.quantity) {
         const precioTotal = element.idProducto.price * element.quantity;
 
-        this.precioss.push({
+        this.precios.push({
           title: element.idProducto.title,
           precioTotal: precioTotal,
           cantidad: element.quantity,
@@ -30,7 +30,7 @@ export class CartAmount {
       }
     });
 
-    this.totalPrecios = this.precioss.reduce(
+    this.totalPrecios = this.precios.reduce(
       (total, producto) => total + producto.precioTotal,
       0
     );
